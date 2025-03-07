@@ -18,7 +18,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "proglove_connect_samples"
 include(
-//    ":common",
+    ":common",
     ":pgSlimIntentSampleJavaApp",
     ":pgSlimIntentSampleApp",
 //    ":pgSdkSampleApp",
