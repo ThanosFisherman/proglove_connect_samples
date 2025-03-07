@@ -3,31 +3,45 @@ plugins {
 }
 
 android {
-    namespace = "de.proglove.example.sdk.java"
+    namespace = "com.example.pgsdksamplejavaapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "de.proglove.example.sdk.java"
+        applicationId = "com.example.pgsdksamplejavaapp"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
+        buildConfigField("int", "VERSION_CODE", versionCode.toString())
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
+
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isMinifyEnabled = false
+            isDefault = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+           // buildConfigField("String", "VERSION_CODE", defaultConfig.versionCode.toString())
+        }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+    buildFeatures {
+        buildConfig = true
     }
 }
 
@@ -36,6 +50,7 @@ dependencies {
     implementation(project(":common"))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.recyclerview)
     // Integrating ProGlove SDK
     if (findProject(":connect-sdk") != null) {
         implementation(project(":connect-sdk"))
