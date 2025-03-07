@@ -7,7 +7,9 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import androidx.core.content.ContextCompat
+import de.proglove.example.slimintent.databinding.ActivityMainBinding
+
 
 /**
  * This is a minimal code with minimal dependencies that listens to a subset of PG Connect Intent API (barcode scans,
@@ -15,6 +17,7 @@ import kotlinx.android.synthetic.main.activity_main.*
  */
 class SlimActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMainBinding
     // a variable to keep track of the broadcast receiver's registration state
     private var registeredBroadcastReceiver = false
 
@@ -39,10 +42,11 @@ class SlimActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         // register broadcast receiver, if not done yet
         if (!registeredBroadcastReceiver) {
-            registerReceiver(broadcastReceiver, intentFilter)
+            ContextCompat.registerReceiver(this, broadcastReceiver, intentFilter, ContextCompat.RECEIVER_EXPORTED)
             registeredBroadcastReceiver = true
         }
 
@@ -80,7 +84,7 @@ class SlimActivity : AppCompatActivity() {
                 ACTION_SCANNER_STATE_INTENT -> {
                     val scannerStateString = intent.getStringExtra(EXTRA_SCANNER_STATE)
                     Log.i(TAG, "received scanner status: $scannerStateString")
-                    scannerState.text = scannerStateString ?: "null content"
+                    binding.scannerState.text = scannerStateString ?: "null content"
                 }
                 else -> {
                     if (intent.hasExtra(EXTRA_DATA_STRING) || intent.hasExtra(EXTRA_SYMBOLOGY_STRING)) {
@@ -98,8 +102,8 @@ class SlimActivity : AppCompatActivity() {
         val barcodeContentString = intent.getStringExtra(EXTRA_DATA_STRING)
         val symbologyString = intent.getStringExtra(EXTRA_SYMBOLOGY_STRING)
         Log.i(TAG, "received Barcode: $barcodeContentString with symbology: $symbologyString")
-        scannedBarcode.text = barcodeContentString ?: "null content"
-        scannedBarcodeSymbology.text = symbologyString ?: "null content"
+        binding.scannedBarcode.text = barcodeContentString ?: "null content"
+        binding.scannedBarcodeSymbology.text = symbologyString ?: "null content"
     }
 
     companion object {

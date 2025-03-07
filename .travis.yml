@@ -20,7 +20,7 @@ before_install:
   - yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
   - $ANDROID_HOME/cmdline-tools/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" --sdk_root=$ANDROID_HOME
   # Replacing the public repo url with the alpha repo url. The url must contain a entitlement token
-  - sed -i "s,url \".*\",url \"$PROGLOVE_URL\",g" build.gradle
+  - sed -i "s,url \".*\",url \"$PROGLOVE_URL\",g" build.gradle.kts
 jobs:
   include:
     - stage: build

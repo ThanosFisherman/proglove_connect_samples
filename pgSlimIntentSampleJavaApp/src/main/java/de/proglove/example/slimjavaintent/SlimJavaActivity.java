@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 public class SlimJavaActivity extends AppCompatActivity {
 
@@ -62,7 +63,7 @@ public class SlimJavaActivity extends AppCompatActivity {
 
         // register broadcast receiver, if not done yet
         if (!registeredBroadcastReceiver) {
-            registerReceiver(broadcastReceiver, intentFilter);
+            ContextCompat.registerReceiver(this, broadcastReceiver, intentFilter, ContextCompat.RECEIVER_EXPORTED);
             registeredBroadcastReceiver = true;
         }
 
