@@ -21,7 +21,7 @@ include(
     ":common",
     ":pgSlimIntentSampleJavaApp",
     ":pgSlimIntentSampleApp",
-//    ":pgSdkSampleApp",
+    ":pgSdkSampleApp",
     ":pgSdkSampleJavaApp",
 //    ":pgIntentSampleApp"
 )

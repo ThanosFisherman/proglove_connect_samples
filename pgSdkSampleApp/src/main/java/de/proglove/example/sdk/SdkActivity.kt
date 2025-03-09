@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.proglove.example.common.DisplaySampleData
+import de.proglove.example.sdk.databinding.ActivityMainBinding
 import de.proglove.sdk.ConnectionStatus
 import de.proglove.sdk.IServiceOutput
 import de.proglove.sdk.PgError
@@ -47,53 +48,14 @@ import de.proglove.sdk.scanner.PgPredefinedFeedback
 import de.proglove.sdk.scanner.PgScannerConfig
 import de.proglove.sdk.utils.IPgSetActivityGoalsCallback
 import de.proglove.sdk.workerperformance.PgActivityGoals
-import kotlinx.android.synthetic.main.activity_goals.activityGoalsAverageScansGoalEdit
-import kotlinx.android.synthetic.main.activity_goals.activityGoalsScansGoalEdit
-import kotlinx.android.synthetic.main.activity_goals.activityGoalsStepsGoalEdit
-import kotlinx.android.synthetic.main.activity_goals.setActivityGoalsBtn
-import kotlinx.android.synthetic.main.activity_main.blockAllTriggersButton
-import kotlinx.android.synthetic.main.activity_main.blockTriggerButton
-import kotlinx.android.synthetic.main.activity_main.connectScannerPinnedBtn
-import kotlinx.android.synthetic.main.activity_main.connectScannerRegularBtn
-import kotlinx.android.synthetic.main.activity_main.defaultFeedbackSwitch
-import kotlinx.android.synthetic.main.activity_main.deviceVisibilityBtn
-import kotlinx.android.synthetic.main.activity_main.disconnectDisplayBtn
-import kotlinx.android.synthetic.main.activity_main.displayStateOutput
-import kotlinx.android.synthetic.main.activity_main.inputField
-import kotlinx.android.synthetic.main.activity_main.lastResponseValue
-import kotlinx.android.synthetic.main.activity_main.pickDisplayOrientationDialogBtn
-import kotlinx.android.synthetic.main.activity_main.sendFeedbackWithReplaceQueueSwitch
-import kotlinx.android.synthetic.main.activity_main.sendNotificationTestScreenBtn
-import kotlinx.android.synthetic.main.activity_main.sendPartialRefreshTestScreenBtn
-import kotlinx.android.synthetic.main.activity_main.sendPg1ATestScreenBtn
-import kotlinx.android.synthetic.main.activity_main.sendPg1TestScreenBtn
-import kotlinx.android.synthetic.main.activity_main.sendPg3WithRightHeadersTestScreenBtn
-import kotlinx.android.synthetic.main.activity_main.sendTestScreenBtn
-import kotlinx.android.synthetic.main.activity_main.sendTestScreenBtnFailing
-import kotlinx.android.synthetic.main.activity_main.serviceConnectBtn
-import kotlinx.android.synthetic.main.activity_main.symbologyResult
-import kotlinx.android.synthetic.main.activity_main.unblockTriggerButton
-import kotlinx.android.synthetic.main.activity_main.versionOutput
-import kotlinx.android.synthetic.main.feedback_selection_layout.feedbackId1RB
-import kotlinx.android.synthetic.main.feedback_selection_layout.feedbackId2RB
-import kotlinx.android.synthetic.main.feedback_selection_layout.feedbackId3RB
-import kotlinx.android.synthetic.main.feedback_selection_layout.radioGroup
-import kotlinx.android.synthetic.main.feedback_selection_layout.triggerFeedbackButton
-import kotlinx.android.synthetic.main.profiles_layout.changeProfileLabel
-import kotlinx.android.synthetic.main.profiles_layout.profilesRecycler
-import kotlinx.android.synthetic.main.profiles_layout.refreshConfigProfilesButton
-import kotlinx.android.synthetic.main.take_image_layout.imageTaken
-import kotlinx.android.synthetic.main.take_image_layout.jpegQualityEditText
-import kotlinx.android.synthetic.main.take_image_layout.resolutionRadioGroup
-import kotlinx.android.synthetic.main.take_image_layout.takeImageButton
-import kotlinx.android.synthetic.main.take_image_layout.timeoutEditText
 import java.util.logging.Level
 import java.util.logging.Logger
 
 /**
  * PG SDK example for a scanner.
  */
-class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDisplayOutput, IButtonOutput, IPgTriggersUnblockedOutput, IPgScannerConfigurationChangeOutput {
+class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDisplayOutput,
+    IButtonOutput, IPgTriggersUnblockedOutput, IPgScannerConfigurationChangeOutput {
 
     private val logger = Logger.getLogger("sample-logger")
     private val pgManager = PgManager(logger)
@@ -103,10 +65,12 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
     private var displayConnected = false
 
     private lateinit var profilesAdapter: ProfilesAdapter
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         pgManager.subscribeToServiceEvents(this)
         pgManager.subscribeToScans(this)
@@ -115,14 +79,14 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
         pgManager.subscribeToPgTriggersUnblocked(this)
         pgManager.subscribeToPgScannerConfigurationChanges(this)
 
-        versionOutput.text = BuildConfig.VERSION_CODE.toString()
+        binding.versionOutput.text = BuildConfig.VERSION_CODE.toString()
 
-        serviceConnectBtn.setOnClickListener {
+        binding.serviceConnectBtn.setOnClickListener {
             pgManager.ensureConnectionToService(this.applicationContext)
             updateButtonStates()
         }
 
-        connectScannerRegularBtn.setOnClickListener {
+        binding.connectScannerRegularBtn.setOnClickListener {
             if (scannerConnected) {
                 pgManager.disconnectScanner()
             } else {
@@ -130,7 +94,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             }
         }
 
-        connectScannerPinnedBtn.setOnClickListener {
+        binding.connectScannerPinnedBtn.setOnClickListener {
             if (scannerConnected) {
                 pgManager.disconnectScanner()
             } else {
@@ -138,58 +102,61 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             }
         }
 
-        triggerFeedbackButton.setOnClickListener {
+        binding.feedBackLayout.triggerFeedbackButton.setOnClickListener {
             val selectedFeedbackId = getFeedbackId()
 
             // Creating new PgCommandParams setting the queueing behaviour
-            val pgCommandParams = PgCommandParams(sendFeedbackWithReplaceQueueSwitch.isChecked)
+            val pgCommandParams =
+                PgCommandParams(binding.sendFeedbackWithReplaceQueueSwitch.isChecked)
 
             // Wrapping the feedback data in a PgCommand with the PgCommandData
             val triggerFeedbackCommand = selectedFeedbackId.toCommand(pgCommandParams)
 
             pgManager.triggerFeedback(
-                    command = triggerFeedbackCommand,
-                    callback = object : IPgFeedbackCallback {
+                command = triggerFeedbackCommand,
+                callback = object : IPgFeedbackCallback {
 
-                        override fun onSuccess() {
-                            logger.log(Level.INFO, "Feedback successfully played.")
-                            runOnUiThread {
-                                lastResponseValue.text = getString(R.string.feedback_success)
-                            }
-                        }
-
-                        override fun onError(error: PgError) {
-                            val errorMessage = "An Error occurred during triggerFeedback: $error"
-                            logger.log(Level.WARNING, errorMessage)
-                            runOnUiThread {
-                                Toast.makeText(this@SdkActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                                lastResponseValue.text = error.toString()
-                            }
+                    override fun onSuccess() {
+                        logger.log(Level.INFO, "Feedback successfully played.")
+                        runOnUiThread {
+                            binding.lastResponseValue.text = getString(R.string.feedback_success)
                         }
                     }
+
+                    override fun onError(error: PgError) {
+                        val errorMessage = "An Error occurred during triggerFeedback: $error"
+                        logger.log(Level.WARNING, errorMessage)
+                        runOnUiThread {
+                            Toast.makeText(this@SdkActivity, errorMessage, Toast.LENGTH_SHORT)
+                                .show()
+                            binding.lastResponseValue.text = error.toString()
+                        }
+                    }
+                }
             )
         }
         // setting first Item as selected by default
-        radioGroup.check(feedbackId1RB.id)
+        binding.feedBackLayout.radioGroup.check(R.id.feedbackId1RB)
 
         // set image configurations
         setDefaultImageConfigurations()
-        takeImageButton.setOnClickListener {
+        binding.takeImageLayout.takeImageButton.setOnClickListener {
             takeImage()
         }
 
-        defaultFeedbackSwitch.setOnClickListener {
-            val config = PgScannerConfig(isDefaultScanAckEnabled = defaultFeedbackSwitch.isChecked)
+        binding.defaultFeedbackSwitch.setOnClickListener {
+            val config =
+                PgScannerConfig(isDefaultScanAckEnabled = binding.defaultFeedbackSwitch.isChecked)
 
-            defaultFeedbackSwitch.isEnabled = false
+            binding.defaultFeedbackSwitch.isEnabled = false
 
             pgManager.setScannerConfig(config, object : IPgScannerConfigCallback {
 
                 override fun onScannerConfigSuccess(config: PgScannerConfig) {
                     runOnUiThread {
                         logger.log(Level.INFO, "Successfully updated config on scanner")
-                        defaultFeedbackSwitch.isEnabled = true
-                        lastResponseValue.text = getString(R.string.scanner_config_success)
+                        binding.defaultFeedbackSwitch.isEnabled = true
+                        binding.lastResponseValue.text = getString(R.string.scanner_config_success)
                     }
                 }
 
@@ -199,47 +166,47 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                         logger.log(Level.WARNING, errorMessage)
                         Toast.makeText(this@SdkActivity, errorMessage, Toast.LENGTH_SHORT).show()
                         // restore old state
-                        defaultFeedbackSwitch.toggle()
-                        defaultFeedbackSwitch.isEnabled = true
-                        lastResponseValue.text = error.toString()
+                        binding.defaultFeedbackSwitch.toggle()
+                        binding.defaultFeedbackSwitch.isEnabled = true
+                        binding.lastResponseValue.text = error.toString()
                     }
                 }
             })
         }
 
-        refreshConfigProfilesButton.setOnClickListener {
+        binding.profilesLayout.refreshConfigProfilesButton.setOnClickListener {
             getConfigProfiles()
         }
 
         setupProfilesRecycler()
 
-        blockTriggerButton.setOnClickListener {
+        binding.blockTriggerButton.setOnClickListener {
             blockTrigger()
         }
 
-        blockAllTriggersButton.setOnClickListener {
+        binding.blockAllTriggersButton.setOnClickListener {
             blockAllTriggersFor10s()
         }
 
-        unblockTriggerButton.setOnClickListener {
+        binding.unblockTriggerButton.setOnClickListener {
             unblockTrigger()
         }
 
         addDisplayClickListeners()
 
-        pickDisplayOrientationDialogBtn.setOnClickListener {
+        binding.pickDisplayOrientationDialogBtn.setOnClickListener {
             val error = pgManager.showPickDisplayOrientationDialog(this)
             if (error != null) {
                 Toast.makeText(this, error.toString(), Toast.LENGTH_SHORT).show()
-                lastResponseValue.text = error.toString()
+                binding.lastResponseValue.text = error.toString()
             }
         }
 
-        deviceVisibilityBtn.setOnClickListener {
+        binding.deviceVisibilityBtn.setOnClickListener {
             obtainDeviceVisibilityInfo()
         }
 
-        setActivityGoalsBtn.setOnClickListener {
+        binding.activityGoals.setActivityGoalsBtn.setOnClickListener {
             setActivityGoals()
         }
     }
@@ -250,104 +217,121 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
             override fun onError(error: PgError) {
                 runOnUiThread {
-                    Toast.makeText(this@SdkActivity, "Got error setting text: $error", Toast.LENGTH_SHORT)
-                            .show()
-                    lastResponseValue.text = error.toString()
+                    Toast.makeText(
+                        this@SdkActivity,
+                        "Got error setting text: $error",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                    binding.lastResponseValue.text = error.toString()
                 }
             }
 
             override fun onSuccess() {
                 runOnUiThread {
-                    Toast.makeText(this@SdkActivity, "set screen successfully", Toast.LENGTH_SHORT).show()
-                    lastResponseValue.text = getString(R.string.set_screen_success)
+                    Toast.makeText(this@SdkActivity, "set screen successfully", Toast.LENGTH_SHORT)
+                        .show()
+                    binding.lastResponseValue.text = getString(R.string.set_screen_success)
                 }
             }
         }
 
-        disconnectDisplayBtn.setOnClickListener {
+        binding.disconnectDisplayBtn.setOnClickListener {
             pgManager.disconnectDisplay()
         }
 
-        sendTestScreenBtn.setOnClickListener {
+        binding.sendTestScreenBtn.setOnClickListener {
             val templateId = "PG2"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
             pgManager.setScreen(
-                    data = PgScreenData(templateId, templateFields),
-                    callback = loggingCallback
+                data = PgScreenData(templateId, templateFields),
+                callback = loggingCallback
             )
         }
 
-        sendPartialRefreshTestScreenBtn.setOnClickListener {
+        binding.sendPartialRefreshTestScreenBtn.setOnClickListener {
             val templateId = "PG3"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
             pgManager.setScreen(
-                    data = PgScreenData(templateId, templateFields, RefreshType.PARTIAL_REFRESH),
-                    callback = loggingCallback
+                data = PgScreenData(templateId, templateFields, RefreshType.PARTIAL_REFRESH),
+                callback = loggingCallback
             )
         }
 
-        sendNotificationTestScreenBtn.setOnClickListener {
+        binding.sendNotificationTestScreenBtn.setOnClickListener {
             val templateId = "PG2"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
             pgManager.setNotificationScreen(
-                    data = PgScreenData("PG2", templateFields),
-                    callback = loggingCallback,
-                    durationMs = 3000
+                data = PgScreenData("PG2", templateFields),
+                callback = loggingCallback,
+                durationMs = 3000
             )
         }
 
-        sendTestScreenBtnFailing.setOnClickListener {
+        binding.sendTestScreenBtnFailing.setOnClickListener {
             pgManager.setScreen(
-                    data = PgScreenData(
-                            "PG1",
-                            listOf(
-                                    PgTemplateField(1, "not going to be displayed", "not going to be displayed"),
-                                    PgTemplateField(2, "not going to be displayed", "not going to be displayed"),
-                                    PgTemplateField(3, "not going to be displayed", "not going to be displayed"),
-                                    PgTemplateField(4, "not going to be displayed", "not going to be displayed")
-                            )
-                    ),
-                    callback = loggingCallback
+                data = PgScreenData(
+                    "PG1",
+                    listOf(
+                        PgTemplateField(
+                            1,
+                            "not going to be displayed",
+                            "not going to be displayed"
+                        ),
+                        PgTemplateField(
+                            2,
+                            "not going to be displayed",
+                            "not going to be displayed"
+                        ),
+                        PgTemplateField(
+                            3,
+                            "not going to be displayed",
+                            "not going to be displayed"
+                        ),
+                        PgTemplateField(4, "not going to be displayed", "not going to be displayed")
+                    )
+                ),
+                callback = loggingCallback
             )
         }
 
-        sendPg1TestScreenBtn.setOnClickListener {
+        binding.sendPg1TestScreenBtn.setOnClickListener {
             val templateId = "PG1"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
             pgManager.setScreen(
-                    PgScreenData(templateId, templateFields).toCommand(),
-                    loggingCallback
+                PgScreenData(templateId, templateFields).toCommand(),
+                loggingCallback
             )
         }
 
-        sendPg1ATestScreenBtn.setOnClickListener {
+        binding.sendPg1ATestScreenBtn.setOnClickListener {
             val templateId = "PG1A"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
             pgManager.setScreen(
-                    PgScreenData(templateId, templateFields).toCommand(),
-                    loggingCallback
+                PgScreenData(templateId, templateFields).toCommand(),
+                loggingCallback
             )
         }
 
-        sendPg3WithRightHeadersTestScreenBtn.setOnClickListener {
+        binding.sendPg3WithRightHeadersTestScreenBtn.setOnClickListener {
             val templateId = "PG3"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
                 val rightHeader = DisplaySampleData.SAMPLE_RIGHT_HEADERS.random()
                 PgTemplateField(index + 1, pair.first, pair.second.random(), rightHeader)
             }
             pgManager.setScreen(
-                    PgScreenData(templateId, templateFields).toCommand(),
-                    loggingCallback
+                PgScreenData(templateId, templateFields).toCommand(),
+                loggingCallback
             )
         }
     }
@@ -355,21 +339,30 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
     private fun getSampleDataForTemplate(template: String): List<Pair<String, Array<String>>> {
         return when (template) {
             "PG2" -> listOf(
-                    DisplaySampleData.SAMPLE_STORAGE_UNIT,
-                    DisplaySampleData.SAMPLE_DESTINATION
+                DisplaySampleData.SAMPLE_STORAGE_UNIT,
+                DisplaySampleData.SAMPLE_DESTINATION
             )
+
             "PG3" -> listOf(
-                    DisplaySampleData.SAMPLE_STORAGE_UNIT,
-                    DisplaySampleData.SAMPLE_ITEM,
-                    DisplaySampleData.SAMPLE_QUANTITY
+                DisplaySampleData.SAMPLE_STORAGE_UNIT,
+                DisplaySampleData.SAMPLE_ITEM,
+                DisplaySampleData.SAMPLE_QUANTITY
             )
+
             "PG1I" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG1E" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG1C" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG2I" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
             "PG2E" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
             "PG2C" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
-            "PG1" -> listOf(arrayOf(DisplaySampleData.SAMPLE_MESSAGES, DisplaySampleData.SAMPLE_MESSAGES_2, DisplaySampleData.SAMPLE_ITEM).random())
+            "PG1" -> listOf(
+                arrayOf(
+                    DisplaySampleData.SAMPLE_MESSAGES,
+                    DisplaySampleData.SAMPLE_MESSAGES_2,
+                    DisplaySampleData.SAMPLE_ITEM
+                ).random()
+            )
+
             "PG1A" -> listOf(DisplaySampleData.SAMPLE_MESSAGES_NO_HEADER)
             else -> listOf()
         }
@@ -377,19 +370,19 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
     private fun setDefaultImageConfigurations() {
         val imageConfig = PgImageConfig()
-        jpegQualityEditText.setText(imageConfig.jpegQuality.toString())
+        binding.takeImageLayout.jpegQualityEditText.setText(imageConfig.jpegQuality.toString())
         val defaultTimeout = DEFAULT_IMAGE_TIMEOUT
-        timeoutEditText.setText(defaultTimeout.toString())
+        binding.takeImageLayout.timeoutEditText.setText(defaultTimeout.toString())
     }
 
     private fun setupProfilesRecycler() {
         profilesAdapter = ProfilesAdapter(
-                onProfileClicked = { profileId ->
-                    changeConfigProfile(profileId)
-                }
+            onProfileClicked = { profileId ->
+                changeConfigProfile(profileId)
+            }
         )
-        profilesRecycler.adapter = profilesAdapter
-        profilesRecycler.layoutManager = LinearLayoutManager(this)
+        binding.profilesLayout.profilesRecycler.adapter = profilesAdapter
+        binding.profilesLayout.profilesRecycler.layoutManager = LinearLayoutManager(this)
     }
 
     private fun takeImage() {
@@ -397,13 +390,13 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
         var quality = 20
 
         try {
-            timeout = timeoutEditText.text.toString().toInt()
-            quality = jpegQualityEditText.text.toString().toInt()
+            timeout = binding.takeImageLayout.timeoutEditText.text.toString().toInt()
+            quality = binding.takeImageLayout.jpegQualityEditText.text.toString().toInt()
         } catch (e: NumberFormatException) {
             logger.log(Level.WARNING, "use positive numbers only")
         }
 
-        val resolution = when (resolutionRadioGroup.checkedRadioButtonId) {
+        val resolution = when (binding.takeImageLayout.resolutionRadioGroup.checkedRadioButtonId) {
             R.id.highResolution -> ImageResolution.RESOLUTION_1280_960
             R.id.mediumResolution -> ImageResolution.RESOLUTION_640_480
             R.id.lowResolution -> ImageResolution.RESOLUTION_320_240
@@ -415,15 +408,16 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             override fun onImageReceived(image: PgImage) {
                 val bmp = BitmapFactory.decodeByteArray(image.bytes, 0, image.bytes.size)
                 runOnUiThread {
-                    imageTaken.setImageBitmap(bmp)
-                    lastResponseValue.text = getString(R.string.image_success)
+                    binding.takeImageLayout.imageTaken.setImageBitmap(bmp)
+                    binding.lastResponseValue.text = getString(R.string.image_success)
                 }
             }
 
             override fun onError(error: PgError) {
                 runOnUiThread {
-                    Toast.makeText(this@SdkActivity, "error code is $error", Toast.LENGTH_LONG).show()
-                    lastResponseValue.text = error.toString()
+                    Toast.makeText(this@SdkActivity, "error code is $error", Toast.LENGTH_LONG)
+                        .show()
+                    binding.lastResponseValue.text = error.toString()
                 }
             }
         }
@@ -432,10 +426,10 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
 
     private fun getFeedbackId(): PgPredefinedFeedback {
-        return when (radioGroup.checkedRadioButtonId) {
-            feedbackId1RB.id -> PgPredefinedFeedback.SUCCESS
-            feedbackId2RB.id -> PgPredefinedFeedback.ERROR
-            feedbackId3RB.id -> PgPredefinedFeedback.SPECIAL_1
+        return when (binding.feedBackLayout.radioGroup.checkedRadioButtonId) {
+            R.id.feedbackId1RB -> PgPredefinedFeedback.SUCCESS
+            R.id.feedbackId2RB -> PgPredefinedFeedback.ERROR
+            R.id.feedbackId3RB -> PgPredefinedFeedback.SPECIAL_1
             else -> PgPredefinedFeedback.ERROR
         }
     }
@@ -457,196 +451,205 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
     private fun updateDisplayConnectionUiState() {
         when {
-            serviceConnectionState != ServiceConnectionStatus.CONNECTED -> displayStateOutput.setText(R.string.display_disconnected)
-            displayConnected -> displayStateOutput.setText(R.string.display_connected)
-            else -> displayStateOutput.setText(R.string.display_disconnected)
+            serviceConnectionState != ServiceConnectionStatus.CONNECTED -> binding.displayStateOutput.setText(
+                R.string.display_disconnected
+            )
+
+            displayConnected -> binding.displayStateOutput.setText(R.string.display_connected)
+            else -> binding.displayStateOutput.setText(R.string.display_disconnected)
         }
     }
 
     private fun updateScannerConnectionButtonState() {
         if (scannerConnected) {
-            connectScannerPinnedBtn.setText(R.string.disconnect_scanner)
-            connectScannerRegularBtn.setText(R.string.disconnect_scanner)
+            binding.connectScannerPinnedBtn.setText(R.string.disconnect_scanner)
+            binding.connectScannerRegularBtn.setText(R.string.disconnect_scanner)
         } else {
-            connectScannerPinnedBtn.setText(R.string.pair_scanner)
-            connectScannerRegularBtn.setText(R.string.pair_scanner)
+            binding.connectScannerPinnedBtn.setText(R.string.pair_scanner)
+            binding.connectScannerRegularBtn.setText(R.string.pair_scanner)
         }
     }
 
     private fun updateServiceConnectionButtonState() {
         when (serviceConnectionState) {
             ServiceConnectionStatus.CONNECTING -> {
-                serviceConnectBtn.isEnabled = false
-                serviceConnectBtn.setText(R.string.service_connecting)
+                binding.serviceConnectBtn.isEnabled = false
+                binding.serviceConnectBtn.setText(R.string.service_connecting)
 
-                connectScannerPinnedBtn.setText(R.string.pair_scanner)
-                connectScannerRegularBtn.setText(R.string.pair_scanner)
+                binding.connectScannerPinnedBtn.setText(R.string.pair_scanner)
+                binding.connectScannerRegularBtn.setText(R.string.pair_scanner)
             }
+
             ServiceConnectionStatus.CONNECTED -> {
                 logger.log(Level.INFO, "Connection to ProGlove SDK Service successful.")
 
-                serviceConnectBtn.isEnabled = false
-                serviceConnectBtn.setText(R.string.service_connected)
+                binding.serviceConnectBtn.isEnabled = false
+                binding.serviceConnectBtn.setText(R.string.service_connected)
 
-                connectScannerPinnedBtn.setText(R.string.disconnect_scanner)
-                connectScannerRegularBtn.setText(R.string.disconnect_scanner)
+                binding.connectScannerPinnedBtn.setText(R.string.disconnect_scanner)
+                binding.connectScannerRegularBtn.setText(R.string.disconnect_scanner)
             }
-            ServiceConnectionStatus.DISCONNECTED -> {
-                serviceConnectBtn.isEnabled = true
-                serviceConnectBtn.setText(R.string.connect_service)
 
-                connectScannerPinnedBtn.setText(R.string.pair_scanner)
-                connectScannerRegularBtn.setText(R.string.pair_scanner)
+            ServiceConnectionStatus.DISCONNECTED -> {
+                binding.serviceConnectBtn.isEnabled = true
+                binding.serviceConnectBtn.setText(R.string.connect_service)
+
+                binding.connectScannerPinnedBtn.setText(R.string.pair_scanner)
+                binding.connectScannerRegularBtn.setText(R.string.pair_scanner)
             }
         }
     }
 
     private fun changeConfigProfile(profileId: String) {
         pgManager.changeConfigProfile(
-                PgCommand(PgConfigProfile(profileId)),
-                object : IPgConfigProfileCallback {
-                    override fun onConfigProfileChanged(profile: PgConfigProfile) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "${profile.profileId} set successfully",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = getString(R.string.change_profile_success)
-                        }
-                    }
-
-                    override fun onError(error: PgError) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "Failed to set $profileId - $error",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = error.toString()
-                        }
+            PgCommand(PgConfigProfile(profileId)),
+            object : IPgConfigProfileCallback {
+                override fun onConfigProfileChanged(profile: PgConfigProfile) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "${profile.profileId} set successfully",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = getString(R.string.change_profile_success)
                     }
                 }
+
+                override fun onError(error: PgError) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "Failed to set $profileId - $error",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = error.toString()
+                    }
+                }
+            }
         )
     }
 
     private fun getConfigProfiles() {
         pgManager.getConfigProfiles(
-                object : IPgGetConfigProfilesCallback {
-                    override fun onConfigProfilesReceived(profiles: Array<PgConfigProfile>) {
-                        logger.log(Level.INFO, "received ${profiles.size} config profiles")
-                        val uiProfiles: List<ProfileUiData> = profiles.map { profile ->
-                            ProfileUiData(profile.profileId, profile.isActive)
-                        }
-
-                        runOnUiThread {
-                            changeProfileLabel.visibility = if (profiles.isEmpty()) GONE else VISIBLE
-                            profilesAdapter.updateProfiles(uiProfiles)
-                            lastResponseValue.text = getString(R.string.get_profiles_success)
-                        }
+            object : IPgGetConfigProfilesCallback {
+                override fun onConfigProfilesReceived(profiles: Array<PgConfigProfile>) {
+                    logger.log(Level.INFO, "received ${profiles.size} config profiles")
+                    val uiProfiles: List<ProfileUiData> = profiles.map { profile ->
+                        ProfileUiData(profile.profileId, profile.isActive)
                     }
 
-                    override fun onError(error: PgError) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "Failed to get profiles - $error",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = error.toString()
-                        }
+                    runOnUiThread {
+                        binding.profilesLayout.changeProfileLabel.visibility =
+                            if (profiles.isEmpty()) GONE else VISIBLE
+                        profilesAdapter.updateProfiles(uiProfiles)
+                        binding.lastResponseValue.text = getString(R.string.get_profiles_success)
                     }
                 }
+
+                override fun onError(error: PgError) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "Failed to get profiles - $error",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = error.toString()
+                    }
+                }
+            }
         )
     }
 
     private fun blockTrigger() {
         pgManager.blockPgTrigger(
-                PgCommand(BlockPgTriggersParams(
-                        listOf(PredefinedPgTrigger.DefaultPgTrigger),
-                        listOf(PredefinedPgTrigger.DoubleClickMainPgTrigger),
-                        0,
-                        true)),
-                object : IBlockPgTriggersCallback {
-                    override fun onBlockTriggersCommandSuccess() {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "Blocking trigger success",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = getString(R.string.block_trigger_success)
-                        }
+            PgCommand(
+                BlockPgTriggersParams(
+                    listOf(PredefinedPgTrigger.DefaultPgTrigger),
+                    listOf(PredefinedPgTrigger.DoubleClickMainPgTrigger),
+                    0,
+                    true
+                )
+            ),
+            object : IBlockPgTriggersCallback {
+                override fun onBlockTriggersCommandSuccess() {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "Blocking trigger success",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = getString(R.string.block_trigger_success)
                     }
+                }
 
-                    override fun onError(error: PgError) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "Failed to block the trigger: $error",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = error.toString()
-                        }
+                override fun onError(error: PgError) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "Failed to block the trigger: $error",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = error.toString()
                     }
-                })
+                }
+            })
     }
 
     // Requires Insight Mobile v1.13.0+ and Scanner v2.5.0+
     private fun blockAllTriggersFor10s() {
         pgManager.blockPgTrigger(
-                PgCommand(BlockPgTriggersParams(emptyList(), emptyList(), 10000, true)),
-                object : IBlockPgTriggersCallback {
-                    override fun onBlockTriggersCommandSuccess() {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "Blocking all triggers success",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = getString(R.string.block_trigger_success)
-                        }
+            PgCommand(BlockPgTriggersParams(emptyList(), emptyList(), 10000, true)),
+            object : IBlockPgTriggersCallback {
+                override fun onBlockTriggersCommandSuccess() {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "Blocking all triggers success",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = getString(R.string.block_trigger_success)
                     }
+                }
 
-                    override fun onError(error: PgError) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "Failed to block all triggers: $error",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = error.toString()
-                        }
+                override fun onError(error: PgError) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "Failed to block all triggers: $error",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = error.toString()
                     }
-                })
+                }
+            })
     }
 
     private fun unblockTrigger() {
         pgManager.blockPgTrigger(
-                PgCommand(BlockPgTriggersParams(emptyList(), emptyList(), 0, false)),
-                object : IBlockPgTriggersCallback {
-                    override fun onBlockTriggersCommandSuccess() {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "Unblocking triggers success",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = getString(R.string.unblock_trigger_success)
-                        }
+            PgCommand(BlockPgTriggersParams(emptyList(), emptyList(), 0, false)),
+            object : IBlockPgTriggersCallback {
+                override fun onBlockTriggersCommandSuccess() {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "Unblocking triggers success",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = getString(R.string.unblock_trigger_success)
                     }
+                }
 
-                    override fun onError(error: PgError) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                    applicationContext,
-                                    "Failed to unblock the trigger: $error",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                            lastResponseValue.text = error.toString()
-                        }
+                override fun onError(error: PgError) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            applicationContext,
+                            "Failed to unblock the trigger: $error",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        binding.lastResponseValue.text = error.toString()
                     }
-                })
+                }
+            })
     }
 
     /**
@@ -662,7 +665,9 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                 runOnUiThread {
                     AlertDialog.Builder(this@SdkActivity).apply {
                         setTitle(R.string.device_visibility_alert_title)
-                        setMessage(getString(R.string.device_visibility_alert_content,
+                        setMessage(
+                            getString(
+                                R.string.device_visibility_alert_content,
                                 deviceVisibilityInfo.serialNumber,
                                 deviceVisibilityInfo.firmwareRevision,
                                 deviceVisibilityInfo.batteryLevel,
@@ -670,7 +675,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                                 deviceVisibilityInfo.modelNumber,
                                 deviceVisibilityInfo.manufacturer,
                                 deviceVisibilityInfo.appVersion
-                        ))
+                            )
+                        )
                     }.create().show()
                 }
             }
@@ -682,9 +688,10 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                     AlertDialog.Builder(this@SdkActivity).apply {
                         setTitle(R.string.device_visibility_alert_title)
                         setMessage(
-                                getString(
-                                        R.string.device_visibility_alert_content_error, error
-                                ))
+                            getString(
+                                R.string.device_visibility_alert_content_error, error
+                            )
+                        )
                     }.create().show()
                 }
             }
@@ -693,27 +700,31 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
     private fun setActivityGoals() {
         val activityGoals = PgActivityGoals(
-                activityGoalsStepsGoalEdit.text.toString().toIntOrNull() ?: 650,
-                activityGoalsScansGoalEdit.text.toString().toIntOrNull() ?: 10000,
-                activityGoalsAverageScansGoalEdit.text.toString().toDoubleOrNull() ?: 1.5
+            binding.activityGoals.activityGoalsStepsGoalEdit.text.toString().toIntOrNull() ?: 650,
+            binding.activityGoals.activityGoalsAverageScansGoalEdit.text.toString().toIntOrNull()
+                ?: 10000,
+            binding.activityGoals.activityGoalsAverageScansGoalEdit.text.toString().toDoubleOrNull()
+                ?: 1.5
         )
-        pgManager.setActivityGoals(activityGoals.toCommand(), callback = object : IPgSetActivityGoalsCallback {
-            override fun onSuccess() {
-                logger.log(Level.INFO, "Goals set successfully.")
-            }
+        pgManager.setActivityGoals(
+            activityGoals.toCommand(),
+            callback = object : IPgSetActivityGoalsCallback {
+                override fun onSuccess() {
+                    logger.log(Level.INFO, "Goals set successfully.")
+                }
 
-            override fun onError(error: PgError) {
-                logger.log(Level.SEVERE, "Error during setActivityGoals: $error")
-                runOnUiThread {
-                    Toast.makeText(
+                override fun onError(error: PgError) {
+                    logger.log(Level.SEVERE, "Error during setActivityGoals: $error")
+                    runOnUiThread {
+                        Toast.makeText(
                             applicationContext,
                             "Failed to update goals: $error",
                             Toast.LENGTH_LONG
-                    ).show()
-                    lastResponseValue.text = error.toString()
+                        ).show()
+                        binding.lastResponseValue.text = error.toString()
+                    }
                 }
-            }
-        })
+            })
     }
 
     override fun onDestroy() {
@@ -757,19 +768,19 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
     override fun onBarcodeScanned(barcodeScanResults: BarcodeScanResults) {
         runOnUiThread {
-            inputField.text = barcodeScanResults.barcodeContent
-            symbologyResult.text = barcodeScanResults.symbology ?: ""
+            binding.inputField.text = barcodeScanResults.barcodeContent
+            binding.symbologyResult.text = barcodeScanResults.symbology ?: ""
             if (barcodeScanResults.symbology?.isNotEmpty() == true) {
                 Toast.makeText(
-                        this,
-                        "Got barcode: ${barcodeScanResults.barcodeContent} with symbology ${barcodeScanResults.symbology}",
-                        Toast.LENGTH_LONG
+                    this,
+                    "Got barcode: ${barcodeScanResults.barcodeContent} with symbology ${barcodeScanResults.symbology}",
+                    Toast.LENGTH_LONG
                 ).show()
             } else {
                 Toast.makeText(
-                        this,
-                        "Got barcode: ${barcodeScanResults.barcodeContent} with no symbology",
-                        Toast.LENGTH_LONG
+                    this,
+                    "Got barcode: ${barcodeScanResults.barcodeContent} with no symbology",
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }
@@ -787,7 +798,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             scannerConnected = false
 
             // Connecting a new scanner will reset this config to default, which is true
-            defaultFeedbackSwitch.isChecked = true
+            binding.defaultFeedbackSwitch.isChecked = true
             updateButtonStates()
         }
     }
@@ -859,7 +870,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
      */
     override fun onScannerConfigurationChange(scannerConfigurationChangeResult: PgScannerConfigurationChangeResult) {
         runOnUiThread {
-            var message = when (val status = scannerConfigurationChangeResult.scannerConfigurationChangeStatus) {
+            var message = when (val status =
+                scannerConfigurationChangeResult.scannerConfigurationChangeStatus) {
                 is ScannerConfigurationChangeStatus.Success -> "Scanner configuration successfully changed"
                 is ScannerConfigurationChangeStatus.NoScannerConfiguration -> "No scanner configuration in the profile"
                 is ScannerConfigurationChangeStatus.Unknown -> "Unknown scanner configuration status"
@@ -871,7 +883,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                 message,
                 Toast.LENGTH_LONG
             ).show()
-            lastResponseValue.text = message
+            binding.lastResponseValue.text = message
         }
     }
     /*
