@@ -8,8 +8,10 @@ import android.view.View.VISIBLE
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.proglove.example.common.DisplaySampleData
+import de.proglove.example.intent.databinding.ActivityIntentBinding
 import de.proglove.example.intent.enums.DeviceConnectionStatus
 import de.proglove.example.intent.enums.DisplayConnectionStatus
 import de.proglove.example.intent.enums.ScannerConnectionStatus
@@ -17,59 +19,29 @@ import de.proglove.example.intent.interfaces.IIntentDisplayOutput
 import de.proglove.example.intent.interfaces.IIntentScannerOutput
 import de.proglove.example.intent.interfaces.IScannerConfigurationChangeOutput
 import de.proglove.example.intent.interfaces.IStatusOutput
-import kotlinx.android.synthetic.main.activity_goals.activityGoalsAverageScansGoalEdit
-import kotlinx.android.synthetic.main.activity_goals.activityGoalsScansGoalEdit
-import kotlinx.android.synthetic.main.activity_goals.activityGoalsStepsGoalEdit
-import kotlinx.android.synthetic.main.activity_goals.setActivityGoalsBtn
-import kotlinx.android.synthetic.main.activity_intent.blockAllTriggersButton
-import kotlinx.android.synthetic.main.activity_intent.blockTriggerButton
-import kotlinx.android.synthetic.main.activity_intent.connectScannerBtn
-import kotlinx.android.synthetic.main.activity_intent.defaultFeedbackSwitch
-import kotlinx.android.synthetic.main.activity_intent.deviceVisibilityBtn
-import kotlinx.android.synthetic.main.activity_intent.disconnectDisplayBtn
-import kotlinx.android.synthetic.main.activity_intent.disconnectScannerBtn
-import kotlinx.android.synthetic.main.activity_intent.displayStateOutput
-import kotlinx.android.synthetic.main.activity_intent.getDisplayStateBtn
-import kotlinx.android.synthetic.main.activity_intent.getScannerStateBtn
-import kotlinx.android.synthetic.main.activity_intent.intentInputField
-import kotlinx.android.synthetic.main.activity_intent.lastContactOutput
-import kotlinx.android.synthetic.main.activity_intent.lastResponseValue
-import kotlinx.android.synthetic.main.activity_intent.lastSymbologyOutput
-import kotlinx.android.synthetic.main.activity_intent.pickDisplayOrientationDialogBtn
-import kotlinx.android.synthetic.main.activity_intent.scannerStateOutput
-import kotlinx.android.synthetic.main.activity_intent.sendFeedbackWithReplaceQueueSwitch
-import kotlinx.android.synthetic.main.activity_intent.sendNotificationTestScreenBtn
-import kotlinx.android.synthetic.main.activity_intent.sendPartialRefreshTestScreenBtn
-import kotlinx.android.synthetic.main.activity_intent.sendPg1ATestScreenBtn
-import kotlinx.android.synthetic.main.activity_intent.sendPg1TestScreenBtn
-import kotlinx.android.synthetic.main.activity_intent.sendPg3WithRightHeadersTestScreenBtn
-import kotlinx.android.synthetic.main.activity_intent.sendTestScreenBtn
-import kotlinx.android.synthetic.main.activity_intent.sendTestScreenBtnFailing
-import kotlinx.android.synthetic.main.activity_intent.unblockTriggerButton
-import kotlinx.android.synthetic.main.activity_intent.versionOutput
-import kotlinx.android.synthetic.main.feedback_selection_layout.feedbackId1RB
-import kotlinx.android.synthetic.main.feedback_selection_layout.feedbackId2RB
-import kotlinx.android.synthetic.main.feedback_selection_layout.feedbackId3RB
-import kotlinx.android.synthetic.main.feedback_selection_layout.radioGroup
-import kotlinx.android.synthetic.main.feedback_selection_layout.triggerFeedbackButton
-import kotlinx.android.synthetic.main.profiles_layout.changeProfileLabel
-import kotlinx.android.synthetic.main.profiles_layout.profilesRecycler
-import kotlinx.android.synthetic.main.profiles_layout.refreshConfigProfilesButton
 import java.text.DateFormat
 import java.util.Date
 
 /**
  * PG Intent API usage example with a scanner and a display.
  */
-class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScannerOutput, IStatusOutput, IScannerConfigurationChangeOutput {
+class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScannerOutput,
+    IStatusOutput, IScannerConfigurationChangeOutput {
 
+    private lateinit var binding: ActivityIntentBinding
     override var defaultFeedbackEnabled: Boolean
-        get() = defaultFeedbackSwitch.isChecked
+        get() {
+            return if (::binding.isInitialized)
+                binding.defaultFeedbackSwitch.isChecked
+            else false
+        }
         set(value) {
-            defaultFeedbackSwitch.isChecked = value
+            if (::binding.isInitialized)
+                binding.defaultFeedbackSwitch.isChecked = value
         }
 
     private lateinit var profilesAdapter: ProfilesAdapter
+
 
     private var scannerConnectionState = ScannerConnectionStatus.DISCONNECTED
     private var displayConnectionState = DisplayConnectionStatus.DISCONNECTED
@@ -77,9 +49,15 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_intent)
+        binding = ActivityIntentBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        registerReceiver(messageHandler, messageHandler.filter)
+        ContextCompat.registerReceiver(
+            this,
+            messageHandler,
+            messageHandler.filter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
         messageHandler.registerDisplayOutput(this)
         messageHandler.registerScannerOutput(this)
         messageHandler.setStatusListener(this)
@@ -89,60 +67,60 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         // That Intent will not trigger #onNewIntent.
         messageHandler.handleNewIntent(intent)
 
-        versionOutput.text = BuildConfig.VERSION_CODE.toString()
+        binding.versionOutput.text = BuildConfig.VERSION_CODE.toString()
 
-        getScannerStateBtn.setOnClickListener {
+        binding.getScannerStateBtn.setOnClickListener {
             messageHandler.requestScannerState()
         }
 
-        connectScannerBtn.setOnClickListener {
+        binding.connectScannerBtn.setOnClickListener {
             messageHandler.sendConnect()
         }
 
-        disconnectScannerBtn.setOnClickListener {
+        binding.disconnectScannerBtn.setOnClickListener {
             messageHandler.sendDisconnectScanner()
         }
 
-        triggerFeedbackButton.setOnClickListener {
+        binding.feedBackLayout.triggerFeedbackButton.setOnClickListener {
             val selectedFeedbackId = getFeedbackId()
-            val shouldReplaceQueue = sendFeedbackWithReplaceQueueSwitch.isChecked
+            val shouldReplaceQueue = binding.sendFeedbackWithReplaceQueueSwitch.isChecked
             messageHandler.triggerFeedback(selectedFeedbackId, shouldReplaceQueue)
         }
         //setting first Item as selected by default
-        radioGroup.check(feedbackId1RB.id)
+        binding.feedBackLayout.radioGroup.check(R.id.feedbackId1RB)
 
-        defaultFeedbackSwitch.setOnClickListener {
-            val defaultScanFeedback = defaultFeedbackSwitch.isChecked
+        binding.defaultFeedbackSwitch.setOnClickListener {
+            val defaultScanFeedback = binding.defaultFeedbackSwitch.isChecked
             messageHandler.updateScannerConfig(defaultScanFeedback)
         }
 
-        refreshConfigProfilesButton.setOnClickListener {
+        binding.profilesLayout.refreshConfigProfilesButton.setOnClickListener {
             messageHandler.getActiveConfigProfile()
         }
 
         setupProfilesRecycler()
 
-        blockTriggerButton.setOnClickListener {
+        binding.blockTriggerButton.setOnClickListener {
             messageHandler.blockTrigger()
         }
 
-        blockAllTriggersButton.setOnClickListener {
+        binding.blockAllTriggersButton.setOnClickListener {
             messageHandler.blockAllTriggersFor10s()
         }
 
-        unblockTriggerButton.setOnClickListener {
+        binding.unblockTriggerButton.setOnClickListener {
             messageHandler.unblockTrigger()
         }
 
-        disconnectDisplayBtn.setOnClickListener {
+        binding.disconnectDisplayBtn.setOnClickListener {
             messageHandler.sendDisconnectDisplay()
         }
 
-        getDisplayStateBtn.setOnClickListener {
+        binding.getDisplayStateBtn.setOnClickListener {
             messageHandler.requestDisplayState()
         }
 
-        sendTestScreenBtn.setOnClickListener {
+        binding.sendTestScreenBtn.setOnClickListener {
             val templateId = "PG2"
             val separator = "|"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
@@ -151,16 +129,23 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             messageHandler.sendTestScreen(templateId, templateFields, null, separator)
         }
 
-        sendPartialRefreshTestScreenBtn.setOnClickListener {
+        binding.sendPartialRefreshTestScreenBtn.setOnClickListener {
             val templateId = "PG3"
             val separator = "|"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
                 "${index + 1}$separator${pair.first}$separator${pair.second.random()}"
             }.joinToString(separator)
-            messageHandler.sendTestScreen(templateId, templateFields, null, separator, 0, "PARTIAL_REFRESH")
+            messageHandler.sendTestScreen(
+                templateId,
+                templateFields,
+                null,
+                separator,
+                0,
+                "PARTIAL_REFRESH"
+            )
         }
 
-        sendNotificationTestScreenBtn.setOnClickListener {
+        binding.sendNotificationTestScreenBtn.setOnClickListener {
             val templateId = "PG2I"
             val separator = "|"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
@@ -169,7 +154,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             messageHandler.sendTestScreen(templateId, templateFields, null, separator, 3000)
         }
 
-        sendPg1TestScreenBtn.setOnClickListener {
+        binding.sendPg1TestScreenBtn.setOnClickListener {
             val templateId = "PG1"
             val separator = "|"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
@@ -178,7 +163,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             messageHandler.sendTestScreen(templateId, templateFields, null, separator, 3000)
         }
 
-        sendPg1ATestScreenBtn.setOnClickListener {
+        binding.sendPg1ATestScreenBtn.setOnClickListener {
             val templateId = "PG1A"
             val separator = "|"
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
@@ -187,13 +172,15 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             messageHandler.sendTestScreen(templateId, templateFields, null, separator, 3000)
         }
 
-        sendPg3WithRightHeadersTestScreenBtn.setOnClickListener {
+        binding.sendPg3WithRightHeadersTestScreenBtn.setOnClickListener {
             val templateId = "PG3"
             val separator = "|"
 
             val allData = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
-                val headerAndText = "${index + 1}$separator${pair.first}$separator${pair.second.random()}"
-                val rightHeader = "${index + 1}$separator${DisplaySampleData.SAMPLE_RIGHT_HEADERS.random()}"
+                val headerAndText =
+                    "${index + 1}$separator${pair.first}$separator${pair.second.random()}"
+                val rightHeader =
+                    "${index + 1}$separator${DisplaySampleData.SAMPLE_RIGHT_HEADERS.random()}"
                 Pair(headerAndText, rightHeader)
             }
             val headerAndText = allData.joinToString(separator) { pair -> pair.first }
@@ -202,19 +189,19 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             messageHandler.sendTestScreen(templateId, headerAndText, rightHeaders, separator, 3000)
         }
 
-        sendTestScreenBtnFailing.setOnClickListener {
+        binding.sendTestScreenBtnFailing.setOnClickListener {
             messageHandler.sendTestScreen("PG2", "|||", null, ";")
         }
 
-        pickDisplayOrientationDialogBtn.setOnClickListener {
+        binding.pickDisplayOrientationDialogBtn.setOnClickListener {
             messageHandler.showPickDisplayOrientationDialog()
         }
 
-        deviceVisibilityBtn.setOnClickListener {
+        binding.deviceVisibilityBtn.setOnClickListener {
             messageHandler.obtainDeviceVisibility()
         }
 
-        setActivityGoalsBtn.setOnClickListener {
+        binding.activityGoals.setActivityGoalsBtn.setOnClickListener {
             setActivityGoals()
         }
     }
@@ -227,30 +214,39 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
     private fun getSampleDataForTemplate(template: String): List<Pair<String, Array<String>>> {
         return when (template) {
             "PG2" -> listOf(
-                    DisplaySampleData.SAMPLE_STORAGE_UNIT,
-                    DisplaySampleData.SAMPLE_DESTINATION
+                DisplaySampleData.SAMPLE_STORAGE_UNIT,
+                DisplaySampleData.SAMPLE_DESTINATION
             )
+
             "PG3" -> listOf(
-                    DisplaySampleData.SAMPLE_STORAGE_UNIT,
-                    DisplaySampleData.SAMPLE_ITEM,
-                    DisplaySampleData.SAMPLE_QUANTITY
+                DisplaySampleData.SAMPLE_STORAGE_UNIT,
+                DisplaySampleData.SAMPLE_ITEM,
+                DisplaySampleData.SAMPLE_QUANTITY
             )
+
             "PG1I" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG1E" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG1C" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG2I" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
             "PG2E" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
             "PG2C" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
-            "PG1" -> listOf(arrayOf(DisplaySampleData.SAMPLE_MESSAGES, DisplaySampleData.SAMPLE_MESSAGES_2, DisplaySampleData.SAMPLE_ITEM).random())
+            "PG1" -> listOf(
+                arrayOf(
+                    DisplaySampleData.SAMPLE_MESSAGES,
+                    DisplaySampleData.SAMPLE_MESSAGES_2,
+                    DisplaySampleData.SAMPLE_ITEM
+                ).random()
+            )
+
             "PG1A" -> listOf(DisplaySampleData.SAMPLE_MESSAGES_NO_HEADER)
             else -> listOf()
         }
     }
 
-    private fun getFeedbackId() = when (radioGroup.checkedRadioButtonId) {
-        feedbackId1RB.id -> 1
-        feedbackId2RB.id -> 2
-        feedbackId3RB.id -> 3
+    private fun getFeedbackId() = when (binding.feedBackLayout.radioGroup.checkedRadioButtonId) {
+        R.id.feedbackId1RB -> 1
+        R.id.feedbackId2RB -> 2
+        R.id.feedbackId3RB -> 3
         // returning 1 as default
         else -> 1
     }
@@ -258,7 +254,11 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
     override fun onDestroy() {
         super.onDestroy()
 
-        unregisterReceiver(messageHandler)
+        try {
+            unregisterReceiver(messageHandler)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         messageHandler.unregisterDisplayOutput(this)
         messageHandler.unregisterScannerOutput(this)
     }
@@ -266,15 +266,15 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
     private fun updateConnectionLabel() {
         runOnUiThread {
             if (scannerConnectionState == ScannerConnectionStatus.CONNECTED) {
-                scannerStateOutput.setText(R.string.scanner_connected)
+                binding.scannerStateOutput.setText(R.string.scanner_connected)
             } else if (scannerConnectionState == ScannerConnectionStatus.DISCONNECTED) {
-                scannerStateOutput.setText(R.string.scanner_disconnected)
+                binding.scannerStateOutput.setText(R.string.scanner_disconnected)
             }
 
             if (displayConnectionState == DisplayConnectionStatus.CONNECTED) {
-                displayStateOutput.setText(R.string.display_connected)
+                binding.displayStateOutput.setText(R.string.display_connected)
             } else if (displayConnectionState == DisplayConnectionStatus.DISCONNECTED) {
-                displayStateOutput.setText(R.string.display_disconnected)
+                binding.displayStateOutput.setText(R.string.display_disconnected)
             }
         }
 
@@ -286,27 +286,28 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         val dateFormat = DateFormat.getDateTimeInstance()
         val formattedDate = dateFormat.format(date)
         runOnUiThread {
-            lastContactOutput.text = formattedDate
+            binding.lastContactOutput.text = formattedDate
         }
     }
 
     override fun onDeviceVisibilityInfoReceived(
-            serialNumber: String,
-            firmwareRevision: String,
-            batteryLevel: Int,
-            bceRevision: String,
-            modelNumber: String,
-            manufacturer: String,
-            appVersion: String
+        serialNumber: String,
+        firmwareRevision: String,
+        batteryLevel: Int,
+        bceRevision: String,
+        modelNumber: String,
+        manufacturer: String,
+        appVersion: String
     ) {
-        val message = getString(R.string.device_visibility_alert_content,
-                serialNumber,
-                firmwareRevision,
-                batteryLevel,
-                bceRevision,
-                modelNumber,
-                manufacturer,
-                appVersion
+        val message = getString(
+            R.string.device_visibility_alert_content,
+            serialNumber,
+            firmwareRevision,
+            batteryLevel,
+            bceRevision,
+            modelNumber,
+            manufacturer,
+            appVersion
         )
         // Display content of deviceVisibilityInfo
         Log.i(TAG, "Did receive device visibility info:\n$message")
@@ -320,9 +321,9 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
 
     override fun onBarcodeScanned(barcode: String, symbology: String?) {
         runOnUiThread {
-            intentInputField?.text = barcode
+            binding.intentInputField.text = barcode
             Toast.makeText(this, "Got barcode: $barcode", Toast.LENGTH_LONG).show()
-            lastSymbologyOutput.text = symbology ?: ""
+            binding.lastSymbologyOutput.text = symbology ?: ""
         }
         updateLastContact()
     }
@@ -333,9 +334,11 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             DeviceConnectionStatus.CONNECTED -> {
                 ScannerConnectionStatus.CONNECTED
             }
+
             DeviceConnectionStatus.DISCONNECTED -> {
                 ScannerConnectionStatus.DISCONNECTED
             }
+
             else -> {
                 ScannerConnectionStatus.CONNECTING
             }
@@ -349,31 +352,36 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         }
 
         runOnUiThread {
-            changeProfileLabel.visibility = if (profiles.isEmpty()) GONE else VISIBLE
+            binding.profilesLayout.changeProfileLabel.visibility =
+                if (profiles.isEmpty()) GONE else VISIBLE
             profilesAdapter.updateProfiles(profiles)
         }
     }
 
     override fun onScannerConfigurationChange(status: String, errorMessage: String?) {
         runOnUiThread {
-            lastResponseValue.text = status
+            binding.lastResponseValue.text = status
         }
     }
 
     private fun setupProfilesRecycler() {
         profilesAdapter = ProfilesAdapter(
-                onProfileClicked = { profileId ->
-                    messageHandler.changeConfigProfile(profileId)
-                }
+            onProfileClicked = { profileId ->
+                messageHandler.changeConfigProfile(profileId)
+            }
         )
-        profilesRecycler.adapter = profilesAdapter
-        profilesRecycler.layoutManager = LinearLayoutManager(this)
+        binding.profilesLayout.profilesRecycler.adapter = profilesAdapter
+        binding.profilesLayout.profilesRecycler.layoutManager = LinearLayoutManager(this)
     }
 
     private fun setActivityGoals() {
-        val totalStepsGoal = activityGoalsStepsGoalEdit.text.toString().toIntOrNull() ?: 650
-        val totalScansGoal = activityGoalsScansGoalEdit.text.toString().toIntOrNull() ?: 10000
-        val averageScantimeGoal = activityGoalsAverageScansGoalEdit.text.toString().toFloatOrNull() ?: 1.5f
+        val totalStepsGoal =
+            binding.activityGoals.activityGoalsStepsGoalEdit.text.toString().toIntOrNull() ?: 650
+        val totalScansGoal =
+            binding.activityGoals.activityGoalsScansGoalEdit.text.toString().toIntOrNull() ?: 10000
+        val averageScantimeGoal =
+            binding.activityGoals.activityGoalsAverageScansGoalEdit.text.toString().toFloatOrNull()
+                ?: 1.5f
 
         messageHandler.updateGoals(totalStepsGoal, totalScansGoal, averageScantimeGoal)
     }
@@ -388,9 +396,11 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             DeviceConnectionStatus.CONNECTED -> {
                 DisplayConnectionStatus.CONNECTED
             }
+
             DeviceConnectionStatus.DISCONNECTED -> {
                 DisplayConnectionStatus.DISCONNECTED
             }
+
             else -> {
                 DisplayConnectionStatus.CONNECTING
             }
@@ -400,7 +410,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
 
     override fun onStatusReceived(status: String) {
         runOnUiThread {
-            lastResponseValue.text = status
+            binding.lastResponseValue.text = status
         }
     }
 

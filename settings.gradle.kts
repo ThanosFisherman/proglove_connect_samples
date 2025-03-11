@@ -23,5 +23,5 @@ include(
     ":pgSlimIntentSampleApp",
     ":pgSdkSampleApp",
     ":pgSdkSampleJavaApp",
-//    ":pgIntentSampleApp"
+    ":pgIntentSampleApp"
 )
