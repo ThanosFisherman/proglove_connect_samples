@@ -103,6 +103,10 @@ class MessageHandler(private val context: Context) : BroadcastReceiver() {
                     intent.getStringExtra(ApiConstants.EXTRA_DISPLAY_BUTTON)?.let { s ->
                         notifyOnButtonPressed(s)
                     }
+                    // alternative for detecting double (or triple) triggers
+//                    intent.getStringExtra(ApiConstants.EXTRA_DISPLAY_BUTTON_GESTURE)?.let {s->
+//                        notifyOnButtonPressed(s)
+//                    }
                 }
                 ApiConstants.ACTION_SET_SCREEN_RESULT_INTENT -> {
                     log("got ACTION_SET_SCREEN_RESULT_INTENT")

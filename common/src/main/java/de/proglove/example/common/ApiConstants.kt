@@ -48,6 +48,7 @@ object ApiConstants {
     const val EXTRA_DISPLAY_REFRESH_TYPE = "com.proglove.api.extra.REFRESH_TYPE"
     const val EXTRA_DISPLAY_STATE = "com.proglove.api.extra.DISPLAY_STATE"
     const val EXTRA_DISPLAY_BUTTON = "com.proglove.api.extra.DISPLAY_BUTTON"
+    const val EXTRA_DISPLAY_BUTTON_GESTURE = "com.proglove.api.extra.BUTTON_GESTURE"
     const val EXTRA_DISPLAY_DEVICE = "com.proglove.api.extra.DISPLAY_DEVICE_NAME"
     const val EXTRA_DISPLAY_SET_SCREEN_SUCCESS = "com.proglove.api.extra.DISPLAY_SET_SCREEN_SUCCESS"
     const val EXTRA_DISPLAY_SET_SCREEN_ERROR_TEXT = "com.proglove.api.extra.DISPLAY_SET_SCREEN_ERROR"
