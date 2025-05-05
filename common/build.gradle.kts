@@ -11,12 +11,12 @@ version = "1.0-SNAPSHOT"
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 //            sourceCompatibility = Versions.Java.sourceCompatibility
 //            targetCompatibility = Versions.Java.targetCompatibility
@@ -24,7 +24,7 @@ java {
 project.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
     compilerOptions {
         languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
-        jvmTarget.set(JvmTarget.fromTarget("11"))
+        jvmTarget.set(JvmTarget.fromTarget("21"))
     }
 }
 
