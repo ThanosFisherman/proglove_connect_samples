@@ -1,5 +1,7 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileInputStream
 import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -13,7 +15,7 @@ android {
         applicationId = "de.proglove.example.intent"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
+        versionCode = System.getenv("VERSION_CODE")?.toInt() ?: 1
         versionName = "1.0"
         //buildConfigField("int", "VERSION_CODE", versionCode.toString())
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -64,8 +66,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+        compilerOptions {
+            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+            jvmTarget.set(JvmTarget.fromTarget("21"))
+        }
     }
     buildFeatures {
         viewBinding = true
