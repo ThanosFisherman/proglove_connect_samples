@@ -10,23 +10,25 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import de.proglove.example.common.ApiConstants
 import de.proglove.example.common.DisplaySampleData
 import de.proglove.example.intent.databinding.ActivityIntentBinding
 import de.proglove.example.intent.enums.DeviceConnectionStatus
 import de.proglove.example.intent.enums.DisplayConnectionStatus
+import de.proglove.example.intent.enums.DisplayDeviceType
 import de.proglove.example.intent.enums.ScannerConnectionStatus
 import de.proglove.example.intent.interfaces.IIntentDisplayOutput
 import de.proglove.example.intent.interfaces.IIntentScannerOutput
 import de.proglove.example.intent.interfaces.IScannerConfigurationChangeOutput
 import de.proglove.example.intent.interfaces.IStatusOutput
+import org.json.JSONObject
 import java.text.DateFormat
 import java.util.Date
 
 /**
  * PG Intent API usage example with a scanner and a display.
  */
-class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScannerOutput,
-    IStatusOutput, IScannerConfigurationChangeOutput {
+class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScannerOutput, IStatusOutput, IScannerConfigurationChangeOutput {
 
     private lateinit var binding: ActivityIntentBinding
     override var defaultFeedbackEnabled: Boolean
@@ -42,9 +44,9 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
 
     private lateinit var profilesAdapter: ProfilesAdapter
 
-
     private var scannerConnectionState = ScannerConnectionStatus.DISCONNECTED
     private var displayConnectionState = DisplayConnectionStatus.DISCONNECTED
+    private var displayType = DisplayDeviceType.UNKNOWN
     private val messageHandler: MessageHandler = MessageHandler(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,6 +122,9 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             messageHandler.requestDisplayState()
         }
 
+        binding.getDisplayDeviceTypeBtn.setOnClickListener {
+            messageHandler.requestDisplayDeviceType()
+        }
         binding.sendTestScreenBtn.setOnClickListener {
             val templateId = "PG2"
             val separator = "|"
@@ -135,14 +140,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
                 "${index + 1}$separator${pair.first}$separator${pair.second.random()}"
             }.joinToString(separator)
-            messageHandler.sendTestScreen(
-                templateId,
-                templateFields,
-                null,
-                separator,
-                0,
-                "PARTIAL_REFRESH"
-            )
+            messageHandler.sendTestScreen(templateId, templateFields, null, separator, 0, "PARTIAL_REFRESH")
         }
 
         binding.sendNotificationTestScreenBtn.setOnClickListener {
@@ -177,10 +175,8 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             val separator = "|"
 
             val allData = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
-                val headerAndText =
-                    "${index + 1}$separator${pair.first}$separator${pair.second.random()}"
-                val rightHeader =
-                    "${index + 1}$separator${DisplaySampleData.SAMPLE_RIGHT_HEADERS.random()}"
+                val headerAndText = "${index + 1}$separator${pair.first}$separator${pair.second.random()}"
+                val rightHeader = "${index + 1}$separator${DisplaySampleData.SAMPLE_RIGHT_HEADERS.random()}"
                 Pair(headerAndText, rightHeader)
             }
             val headerAndText = allData.joinToString(separator) { pair -> pair.first }
@@ -201,6 +197,22 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             messageHandler.obtainDeviceVisibility()
         }
 
+        binding.sendPgNtfT5Btn.setOnClickListener {
+            messageHandler.sendPgNtfT5()
+        }
+
+        binding.sendPgWork3Btn2T1.setOnClickListener {
+            messageHandler.sendPgWork3Btn2T1()
+        }
+
+        binding.sendPgListT1Btn.setOnClickListener {
+            messageHandler.sendPgListT1()
+        }
+
+        binding.sendTimerScreenBtn.setOnClickListener {
+            messageHandler.sendTimerScreen()
+        }
+
         binding.activityGoals.setActivityGoalsBtn.setOnClickListener {
             setActivityGoals()
         }
@@ -214,30 +226,21 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
     private fun getSampleDataForTemplate(template: String): List<Pair<String, Array<String>>> {
         return when (template) {
             "PG2" -> listOf(
-                DisplaySampleData.SAMPLE_STORAGE_UNIT,
-                DisplaySampleData.SAMPLE_DESTINATION
+                    DisplaySampleData.SAMPLE_STORAGE_UNIT,
+                    DisplaySampleData.SAMPLE_DESTINATION
             )
-
             "PG3" -> listOf(
-                DisplaySampleData.SAMPLE_STORAGE_UNIT,
-                DisplaySampleData.SAMPLE_ITEM,
-                DisplaySampleData.SAMPLE_QUANTITY
+                    DisplaySampleData.SAMPLE_STORAGE_UNIT,
+                    DisplaySampleData.SAMPLE_ITEM,
+                    DisplaySampleData.SAMPLE_QUANTITY
             )
-
             "PG1I" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG1E" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG1C" -> listOf(DisplaySampleData.SAMPLE_ITEM)
             "PG2I" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
             "PG2E" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
             "PG2C" -> listOf(DisplaySampleData.SAMPLE_ITEM, DisplaySampleData.SAMPLE_QUANTITY)
-            "PG1" -> listOf(
-                arrayOf(
-                    DisplaySampleData.SAMPLE_MESSAGES,
-                    DisplaySampleData.SAMPLE_MESSAGES_2,
-                    DisplaySampleData.SAMPLE_ITEM
-                ).random()
-            )
-
+            "PG1" -> listOf(arrayOf(DisplaySampleData.SAMPLE_MESSAGES, DisplaySampleData.SAMPLE_MESSAGES_2, DisplaySampleData.SAMPLE_ITEM).random())
             "PG1A" -> listOf(DisplaySampleData.SAMPLE_MESSAGES_NO_HEADER)
             else -> listOf()
         }
@@ -276,6 +279,14 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             } else if (displayConnectionState == DisplayConnectionStatus.DISCONNECTED) {
                 binding.displayStateOutput.setText(R.string.display_disconnected)
             }
+
+            when (displayType) {
+                DisplayDeviceType.UNKNOWN -> binding.displayTypeOutput.setText(R.string.display_type_unknown)
+                DisplayDeviceType.NOT_CONNECTED -> binding.displayTypeOutput.setText(R.string.display_not_connected)
+                DisplayDeviceType.NOT_DISPLAY_DEVICE -> binding.displayTypeOutput.setText(R.string.not_a_display_device)
+                DisplayDeviceType.DISPLAY_V1 -> binding.displayTypeOutput.setText(R.string.display_type_v1)
+                DisplayDeviceType.DISPLAY_V2 -> binding.displayTypeOutput.setText(R.string.display_type_v2)
+            }
         }
 
         updateLastContact()
@@ -290,24 +301,45 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         }
     }
 
+    private fun updateScreenContextOutput(screenContext: String) {
+        val screenContextJsonObject = screenContext.getJSONObject()
+        if (screenContextJsonObject.has(ApiConstants.EVENT_REFERENCE_ID)) {
+            runOnUiThread {
+                binding.lastScreenContextOutput.text =
+                    "Screen ID: ${screenContextJsonObject.getString(ApiConstants.EVENT_REFERENCE_ID)}"
+            }
+        } else {
+            runOnUiThread {
+                binding.lastScreenContextOutput.text = ""
+            }
+        }
+    }
+
+    private fun String.getJSONObject() = if (isNullOrEmpty()) {
+        JSONObject()
+    } else {
+        JSONObject(this)
+    }
+
     override fun onDeviceVisibilityInfoReceived(
-        serialNumber: String,
-        firmwareRevision: String,
-        batteryLevel: Int,
-        bceRevision: String,
-        modelNumber: String,
-        manufacturer: String,
-        appVersion: String
+            serialNumber: String,
+            firmwareRevision: String,
+            batteryLevel: Int,
+            bceRevision: String,
+            modelNumber: String,
+            manufacturer: String,
+            deviceBluetoothMacAddress: String,
+            appVersion: String
     ) {
-        val message = getString(
-            R.string.device_visibility_alert_content,
-            serialNumber,
-            firmwareRevision,
-            batteryLevel,
-            bceRevision,
-            modelNumber,
-            manufacturer,
-            appVersion
+        val message = getString(R.string.device_visibility_alert_content,
+                serialNumber,
+                firmwareRevision,
+                batteryLevel,
+                bceRevision,
+                modelNumber,
+                manufacturer,
+                deviceBluetoothMacAddress,
+                appVersion
         )
         // Display content of deviceVisibilityInfo
         Log.i(TAG, "Did receive device visibility info:\n$message")
@@ -319,12 +351,13 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         }
     }
 
-    override fun onBarcodeScanned(barcode: String, symbology: String?) {
+    override fun onBarcodeScanned(barcode: String, symbology: String, screenContext: String) {
         runOnUiThread {
             binding.intentInputField.text = barcode
             Toast.makeText(this, "Got barcode: $barcode", Toast.LENGTH_LONG).show()
             binding.lastSymbologyOutput.text = symbology ?: ""
         }
+        updateScreenContextOutput(screenContext)
         updateLastContact()
     }
 
@@ -334,11 +367,9 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             DeviceConnectionStatus.CONNECTED -> {
                 ScannerConnectionStatus.CONNECTED
             }
-
             DeviceConnectionStatus.DISCONNECTED -> {
                 ScannerConnectionStatus.DISCONNECTED
             }
-
             else -> {
                 ScannerConnectionStatus.CONNECTING
             }
@@ -366,9 +397,9 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
 
     private fun setupProfilesRecycler() {
         profilesAdapter = ProfilesAdapter(
-            onProfileClicked = { profileId ->
-                messageHandler.changeConfigProfile(profileId)
-            }
+                onProfileClicked = { profileId ->
+                    messageHandler.changeConfigProfile(profileId)
+                }
         )
         binding.profilesLayout.profilesRecycler.adapter = profilesAdapter
         binding.profilesLayout.profilesRecycler.layoutManager = LinearLayoutManager(this)
@@ -386,8 +417,10 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         messageHandler.updateGoals(totalStepsGoal, totalScansGoal, averageScantimeGoal)
     }
 
-    override fun onButtonPressed(buttonId: String) {
+    override fun onButtonPressed(buttonId: String, screenContext: String) {
         Toast.makeText(this, "Button $buttonId pressed", Toast.LENGTH_SHORT).show()
+
+        updateScreenContextOutput(screenContext)
     }
 
     override fun onDisplayStateChanged(status: DeviceConnectionStatus) {
@@ -396,16 +429,52 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             DeviceConnectionStatus.CONNECTED -> {
                 DisplayConnectionStatus.CONNECTED
             }
-
             DeviceConnectionStatus.DISCONNECTED -> {
                 DisplayConnectionStatus.DISCONNECTED
             }
-
             else -> {
                 DisplayConnectionStatus.CONNECTING
             }
         }
         updateConnectionLabel()
+    }
+
+    override fun onDisplayDeviceTypeChanged(displayType: DisplayDeviceType) {
+        Log.i(TAG, "Did receive display type: $displayType")
+        this.displayType = displayType
+        updateConnectionLabel()
+    }
+
+    override fun onDisplayEventReceived(event: String, context: String) {
+        Log.i(TAG, "Did receive display event: $event")
+
+        val eventJsonObject = event.getJSONObject()
+        val contextJsonObject = context.getJSONObject()
+        val screenMessage = when {
+            eventJsonObject.has(ApiConstants.EVENT_COMPONENT_CLICKED) -> {
+                "Component clicked: ${
+                    eventJsonObject.getJSONObject(ApiConstants.EVENT_COMPONENT_CLICKED)
+                        .getString(ApiConstants.EVENT_REFERENCE_ID)
+                }"
+            }
+
+            eventJsonObject.has(ApiConstants.EVENT_TIMER_EXPIRED) -> {
+                "Timer expired on screen: ${contextJsonObject.getString(ApiConstants.EVENT_REFERENCE_ID)}"
+            }
+
+            eventJsonObject.has(ApiConstants.EVENT_DATA_UPDATED) -> {
+                "Data updated: ${
+                    eventJsonObject.getJSONObject(ApiConstants.EVENT_DATA_UPDATED)
+                        .getString(ApiConstants.EVENT_REFERENCE_ID)
+                }"
+            }
+
+            else -> "Unknown event"
+        }
+
+        runOnUiThread {
+            Toast.makeText(this, screenMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onStatusReceived(status: String) {
