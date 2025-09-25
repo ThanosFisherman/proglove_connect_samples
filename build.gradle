@@ -2,7 +2,7 @@
 buildscript {
     ext.kotlin_version = '1.7.21'
     ext.build_gradle_version = '7.2.2'
-    ext.current_version_scanner_api = '1.10.0'
+    ext.current_version_scanner_api = '1.11.+'
     ext.current_version_app = System.getenv('VERSION_CODE') ?: 1
 
     repositories {

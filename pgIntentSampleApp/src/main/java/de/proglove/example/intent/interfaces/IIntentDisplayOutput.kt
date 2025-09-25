@@ -11,10 +11,16 @@ interface IIntentDisplayOutput {
     /**
      * Callback method for a button being pressed on the display device.
      *
-     * @param buttonId Pressed button ID.
+     * @param buttonPhysicalId Pressed button physical hardware ID.
+     * @param buttonReferenceId Pressed button reference ID as assigned in the screen data.
+     *  If button doesn't have reference ID, it is an empty string.
      * @param screenContext The screen context from which the button was pressed.
      */
-    fun onButtonPressed(buttonId: String, screenContext: String)
+    fun onButtonPressed(
+        buttonPhysicalId: String,
+        buttonReferenceId: String,
+        screenContext: String
+    )
 
     /**
      * A more detailed callback for the display status.

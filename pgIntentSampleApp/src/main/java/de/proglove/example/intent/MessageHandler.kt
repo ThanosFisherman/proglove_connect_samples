@@ -104,10 +104,16 @@ class MessageHandler(private val context: Context) : BroadcastReceiver() {
                 }
                 ApiConstants.ACTION_BUTTON_PRESSED_INTENT -> {
                     log("got ACTION_BUTTON_PRESSED_INTENT")
-                    val buttonId = intent.getStringExtra(ApiConstants.EXTRA_DISPLAY_BUTTON)
+                    val buttonPhysicalId = intent.getStringExtra(ApiConstants.EXTRA_DISPLAY_BUTTON_PHYSICAL_ID)
+                    val buttonReferenceId =
+                        intent.getStringExtra(ApiConstants.EXTRA_DISPLAY_BUTTON_REFERENCE_ID)
                     val screenContext = intent.getStringExtra(ApiConstants.EXTRA_DISPLAY_SCREEN_CONTEXT)
 
-                    notifyOnButtonPressed(buttonId ?: "", screenContext ?: "")
+                    notifyOnButtonPressed(
+                        buttonPhysicalId ?: "",
+                        buttonReferenceId ?: "",
+                        screenContext ?: ""
+                    )
                 }
                 ApiConstants.ACTION_SET_SCREEN_RESULT_INTENT -> {
                     log("got ACTION_SET_SCREEN_RESULT_INTENT")
@@ -361,7 +367,7 @@ class MessageHandler(private val context: Context) : BroadcastReceiver() {
 
         // When configured, Ivanti barcode intent is triggered by double click
         // on a connected device. In this case button ID is added as extra
-        val buttonId = intent.getStringExtra(ApiConstants.EXTRA_DISPLAY_BUTTON)
+        val buttonId = intent.getStringExtra(ApiConstants.EXTRA_DISPLAY_BUTTON_PHYSICAL_ID)
 
         barcodeContent?.let { s ->
             log("received Ivanti Barcode: $s")
@@ -392,11 +398,15 @@ class MessageHandler(private val context: Context) : BroadcastReceiver() {
     /**
      * Notify display receivers of a button press on D3.
      */
-    private fun notifyOnButtonPressed(buttonId: String, screenContext: String) {
-        log("ButtonId: $buttonId")
+    private fun notifyOnButtonPressed(
+        buttonPhysicalId: String,
+        buttonReferenceId: String,
+        screenContext: String
+    ) {
+        log("Button(physicalId=$buttonPhysicalId, referenceId=$buttonReferenceId) \nscreenContext=$screenContext")
 
         displayReceivers.forEach {
-            it.onButtonPressed(buttonId, screenContext)
+            it.onButtonPressed(buttonPhysicalId, buttonReferenceId, screenContext)
         }
     }
 
