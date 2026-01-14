@@ -40,7 +40,6 @@ import de.proglove.sdk.configuration.PgScannerConfigurationChangeResult;
 import de.proglove.sdk.configuration.ScannerConfigurationChangeStatus;
 import de.proglove.sdk.display.IDisplayOutput;
 import de.proglove.sdk.display.IPgSetScreenCallback;
-import de.proglove.sdk.display.PgScreenData;
 import de.proglove.sdk.display.PgTemplateField;
 import de.proglove.sdk.display.RefreshType;
 import de.proglove.sdk.display.model.v2.DisplayType;
@@ -517,60 +516,65 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         sendTestScreenBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgTemplateField[] data = {
-                        new PgTemplateField(1, "Bezeichnung", "Kopfairbag"),
-                        new PgTemplateField(2, "Fahrzeug-Typ", "Hatchback"),
-                        new PgTemplateField(3, "Teilenummer", "K867 86 027 H3")
-                };
-                PgScreenData screenData = new PgScreenData("PG3", data, RefreshType.DEFAULT);
-                sendScreen(screenData);
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG3(
+                    new PgTemplateField(1, "Bezeichnung", "Kopfairbag"),
+                    new PgTemplateField(2, "Fahrzeug-Typ", "Hatchback"),
+                    new PgTemplateField(3, "Teilenummer", "K867 86 027 H3")
+                );
+                
+                PgScreen pgScreen = new PgScreen(screenView, RefreshType.DEFAULT);
+                sendScreen(pgScreen);
             }
         });
 
         sendAnotherTestScreenBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgTemplateField[] data = {
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG2(
                         new PgTemplateField(1, "Bezeichnung", "Gemüsemischung"),
                         new PgTemplateField(2, "Bezeichnung", "Früchte Müsli")
-                };
-                PgScreenData screenData = new PgScreenData("PG2", data, RefreshType.PARTIAL_REFRESH);
-                sendScreen(screenData);
+                );
+                
+                PgScreen pgScreen = new PgScreen(screenView, RefreshType.PARTIAL_REFRESH);
+                sendScreen(pgScreen);
             }
         });
 
         sendPG1TestScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgTemplateField[] data = {
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG1(
                         new PgTemplateField(1, "LOGIN", "Scan to login and select a process")
-                };
-                PgScreenData screenData = new PgScreenData("PG1", data, RefreshType.DEFAULT);
-                sendScreen(screenData);
+                );
+                
+                PgScreen pgScreen = new PgScreen(screenView, RefreshType.DEFAULT);
+                sendScreen(pgScreen);
             }
         });
 
         sendPG1ATestScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgTemplateField[] data = {
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG1A(
                         new PgTemplateField(1, "", "Scan order to begin")
-                };
-                PgScreenData screenData = new PgScreenData("PG1A", data, RefreshType.DEFAULT);
-                sendScreen(screenData);
+                );
+
+                PgScreen pgScreen = new PgScreen(screenView, RefreshType.DEFAULT);
+                sendScreen(pgScreen);
             }
         });
 
         sendPG3WithRightHeadersTestScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgTemplateField[] data = {
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG3(
                         new PgTemplateField(1, "Quelle", "K1111", "1/10"),
                         new PgTemplateField(2, "Ziel", "V69SS561"),
                         new PgTemplateField(3, "Sachnummer", "A 910 689 61 00", "9051")
-                };
-                PgScreenData screenData = new PgScreenData("PG3", data, RefreshType.DEFAULT);
-                sendScreen(screenData);
+                );
+
+                PgScreen pgScreen = new PgScreen(screenView, RefreshType.DEFAULT);
+                sendScreen(pgScreen);
             }
         });
 
@@ -583,8 +587,9 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                         new PgTemplateField(3, "and I'd like to take", "a minute just sit right there"),
                         new PgTemplateField(4, "I'll tell you how I become", "the prince of a town called Bel Air")
                 };
-                PgScreenData screenData = new PgScreenData("PG1", data, RefreshType.DEFAULT);
-                sendScreen(screenData);
+
+                PgScreen pgScreen = new PgScreen("PG1", Arrays.asList(data), RefreshType.DEFAULT);
+                sendScreen(pgScreen);
             }
         });
 
@@ -716,7 +721,8 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                                 "button2",
                                 "Cancel",
                                 Notify.INSTANCE
-                            )
+                            ),
+                            ""
                         ),
                         new PgWork1T1(
                             "",
@@ -725,7 +731,8 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                                 "Main Field",
                                 "This is the main text field",
                                 NoState.INSTANCE
-                            )
+                            ),
+                            "Screen Title"
                         )
                     },
                     "",
@@ -738,12 +745,7 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                             Green.INSTANCE,
                             Notify.INSTANCE
                         ),
-                        new Assigned(
-                            "actionButton2",
-                            "Back",
-                            Red.INSTANCE,
-                            NavigateBack.INSTANCE
-                        )
+                        Unassigned.INSTANCE
                     ),
                     Disabled.INSTANCE,
                     PgScreenOrientation.PORTRAIT
@@ -835,12 +837,7 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                             Yellow.INSTANCE,
                             Notify.INSTANCE
                         ),
-                        new Assigned(
-                            "actionButton2",
-                            "Back",
-                            Red.INSTANCE,
-                            NavigateBack.INSTANCE
-                        )
+                        Unassigned.INSTANCE
                     ),
                     Disabled.INSTANCE,
                     PgScreenOrientation.PORTRAIT
@@ -882,7 +879,8 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                             "Timer Example",
                             "This screen will automatically navigate back after 2 seconds.",
                             new PgScreenComponent.TextField.State.Focused(true)
-                        )
+                        ),
+                        ""
                     ),
 										new PgActionButtons(
 												Unassigned.INSTANCE,
@@ -1017,9 +1015,9 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
 
     }
 
-    private void sendScreen(PgScreenData screenData) {
+    private void sendScreen(PgScreen pgScreen) {
         if (pgManager.isConnectedToService() && pgManager.isConnectedToDisplay()) {
-            pgManager.setScreen(screenData, new IPgSetScreenCallback() {
+            pgManager.setScreen(pgScreen.toCommand(), new IPgSetScreenCallback() {
                 @Override
                 public void onSuccess() {
                     String msg = "Screen set successfully";

@@ -31,7 +31,6 @@ import de.proglove.sdk.configuration.PgScannerConfigurationChangeResult
 import de.proglove.sdk.configuration.ScannerConfigurationChangeStatus
 import de.proglove.sdk.display.IDisplayOutput
 import de.proglove.sdk.display.IPgSetScreenCallback
-import de.proglove.sdk.display.PgScreenData
 import de.proglove.sdk.display.PgTemplateField
 import de.proglove.sdk.display.RefreshType
 import de.proglove.sdk.scanner.BarcodeScanResults
@@ -259,42 +258,59 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
         }
 
         binding.sendTestScreenBtn.setOnClickListener {
-            val templateId = "PG2"
-            val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
+            val templateFields = getSampleDataForTemplate("PG2").mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
+            val pgScreen = PgScreen(
+                screenView = PgScreenView.TemplateV1.PG2(
+                    templateFieldTop = templateFields[0],
+                    templateFieldBottom = templateFields[1]
+                )
+            )
             pgManager.setScreen(
-                    data = PgScreenData(templateId, templateFields),
-                    callback = loggingCallback
+                command = pgScreen.toCommand(),
+                callback = loggingCallback
             )
         }
 
         binding.sendPartialRefreshTestScreenBtn.setOnClickListener {
-            val templateId = "PG3"
-            val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
+            val templateFields = getSampleDataForTemplate("PG3").mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
+            val pgScreen = PgScreen(
+                screenView = PgScreenView.TemplateV1.PG3(
+                    templateFieldTop = templateFields[0],
+                    templateFieldMiddle = templateFields[1],
+                    templateFieldBottom = templateFields[2]
+                ),
+                refreshType = RefreshType.PARTIAL_REFRESH
+            )
             pgManager.setScreen(
-                    data = PgScreenData(templateId, templateFields, RefreshType.PARTIAL_REFRESH),
-                    callback = loggingCallback
+                command = pgScreen.toCommand(),
+                callback = loggingCallback
             )
         }
 
         binding.sendNotificationTestScreenBtn.setOnClickListener {
-            val templateId = "PG2"
-            val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
+            val templateFields = getSampleDataForTemplate("PG2").mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
-            pgManager.setNotificationScreen(
-                    data = PgScreenData("PG2", templateFields),
-                    callback = loggingCallback,
-                    durationMs = 3000
+            val pgScreen = PgScreen(
+                screenView = PgScreenView.TemplateV1.PG2(
+                    templateFieldTop = templateFields[0],
+                    templateFieldBottom = templateFields[1]
+                ),
+                durationMs = 3000
+            )
+            pgManager.setScreen(
+                command = pgScreen.toCommand(),
+                callback = loggingCallback
             )
         }
 
         binding.sendTestScreenBtnFailing.setOnClickListener {
             pgManager.setScreen(
-                    data = PgScreenData(
+                    command = PgScreen(
                             "PG1",
                             listOf(
                                     PgTemplateField(1, "not going to be displayed", "not going to be displayed"),
@@ -302,42 +318,56 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                                     PgTemplateField(3, "not going to be displayed", "not going to be displayed"),
                                     PgTemplateField(4, "not going to be displayed", "not going to be displayed")
                             )
-                    ),
+                    ).toCommand(),
                     callback = loggingCallback
             )
         }
 
         binding.sendPg1TestScreenBtn.setOnClickListener {
-            val templateId = "PG1"
-            val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
+            val templateFields = getSampleDataForTemplate("PG1").mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
+            val pgScreen = PgScreen(
+                screenView = PgScreenView.TemplateV1.PG1(
+                    templateField = templateFields[0]
+                )
+            )
             pgManager.setScreen(
-                    PgScreenData(templateId, templateFields).toCommand(),
-                    loggingCallback
+                pgScreen.toCommand(),
+                loggingCallback
             )
         }
 
         binding.sendPg1ATestScreenBtn.setOnClickListener {
-            val templateId = "PG1A"
-            val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
+            val templateFields = getSampleDataForTemplate("PG1A").mapIndexed { index, pair ->
                 PgTemplateField(index + 1, pair.first, pair.second.random())
             }
+            val pgScreen = PgScreen(
+                screenView = PgScreenView.TemplateV1.PG1A(
+                    templateField = templateFields[0]
+                )
+            )
             pgManager.setScreen(
-                    PgScreenData(templateId, templateFields).toCommand(),
-                    loggingCallback
+                pgScreen.toCommand(),
+                loggingCallback
             )
         }
 
         binding.sendPg3WithRightHeadersTestScreenBtn.setOnClickListener {
-            val templateId = "PG3"
-            val templateFields = getSampleDataForTemplate(templateId).mapIndexed { index, pair ->
+            val templateFields = getSampleDataForTemplate("PG3").mapIndexed { index, pair ->
                 val rightHeader = DisplaySampleData.SAMPLE_RIGHT_HEADERS.random()
                 PgTemplateField(index + 1, pair.first, pair.second.random(), rightHeader)
             }
+            val pgScreen = PgScreen(
+                screenView = PgScreenView.TemplateV1.PG3(
+                    templateFieldTop = templateFields[0],
+                    templateFieldMiddle = templateFields[1],
+                    templateFieldBottom = templateFields[2]
+                )
+            )
             pgManager.setScreen(
-                    PgScreenData(templateId, templateFields).toCommand(),
-                    loggingCallback
+                pgScreen.toCommand(),
+                loggingCallback
             )
         }
     }
@@ -455,6 +485,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                                 headerText = "Main Field",
                                 contentText = "This is the main text field"
                             ),
+                            titleText = "Screen Title"
                         )),
                     actionButtons = PgActionButtons(
                         frontOutside = Unassigned,
@@ -465,12 +496,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                             indicatorColor = IndicatorColor.Green,
                             onSingleClick = PgScreenAction.Notify
                         ),
-                        backInside = Assigned(
-                            referenceId = "actionButton2",
-                            indicatorLabelText = "Back",
-                            indicatorColor = IndicatorColor.Red,
-                            onSingleClick = PgScreenAction.NavigateBack
-                        )
+                        backInside = Unassigned
                     ),
                     forcedOrientation = PgScreenOrientation.PORTRAIT
                 ).toCommand(),
@@ -552,12 +578,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                             indicatorColor = IndicatorColor.Yellow,
                             onSingleClick = PgScreenAction.Notify
                         ),
-                        backInside = Assigned(
-                            referenceId = "actionButton2",
-                            indicatorLabelText = "Back",
-                            indicatorColor = IndicatorColor.Red,
-                            onSingleClick = PgScreenAction.NavigateBack
-                        )
+                        backInside = Unassigned
                     ),
                     forcedOrientation = PgScreenOrientation.PORTRAIT
                 ).toCommand(),

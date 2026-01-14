@@ -150,6 +150,7 @@ sealed class DisplayV2Examples : Intent(ACTION_SET_SCREEN_V2_INTENT) {
                   {
                     "ref_id": "SCREEN_VIEW_2",
                     "pg_work2_t1": {
+                      "title": "Screen title",
                       "field_top": {
                         "ref_id": "field_top",
                         "text_content": "Top Content",
@@ -175,14 +176,6 @@ sealed class DisplayV2Examples : Intent(ACTION_SET_SCREEN_V2_INTENT) {
                           "basic": "NOTIFY"
                         },
                         "color": "YELLOW"
-                      },
-                      "back_outside": {
-                        "ref_id": "ab2",
-                        "text": "Back",
-                        "color": "RED",
-                        "action_on_single_click": {
-                          "basic": "NAVIGATE_BACK"
-                        }
                       }
                     }
                 """.trimIndent()
@@ -246,14 +239,6 @@ sealed class DisplayV2Examples : Intent(ACTION_SET_SCREEN_V2_INTENT) {
                           "basic": "NOTIFY"
                         },
                         "color": "YELLOW"
-                      },
-                      "back_outside": {
-                        "ref_id": "ab2",
-                        "text": "Back",
-                        "color": "RED",
-                        "action_on_single_click": {
-                          "basic": "NAVIGATE_BACK"
-                        }
                       }
                     }
                 """.trimIndent()

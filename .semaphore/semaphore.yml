@@ -13,6 +13,10 @@ global_job_config:
       - checkout
       - 'cache restore gradle-wrapper-${SEMAPHORE_GIT_TAG_NAME:-$SEMAPHORE_GIT_BRANCH},gradle-wrapper-development'
       - 'cache restore gradle-caches-${SEMAPHORE_GIT_TAG_NAME:-$SEMAPHORE_GIT_BRANCH},gradle-caches-development'
+      - '# Replacing the public repo url with the alpha repo url. The url must contain a entitlement token'
+      - 'sed -i "s,url \".*\",url \"$PROGLOVE_URL\",g" build.gradle'
+  secrets:
+    - name: android-keys
 blocks:
   - name: Build
     task:

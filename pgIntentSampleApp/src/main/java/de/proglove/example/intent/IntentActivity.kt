@@ -417,8 +417,13 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         messageHandler.updateGoals(totalStepsGoal, totalScansGoal, averageScantimeGoal)
     }
 
-    override fun onButtonPressed(buttonId: String, screenContext: String) {
-        Toast.makeText(this, "Button $buttonId pressed", Toast.LENGTH_SHORT).show()
+    override fun onButtonPressed(
+        buttonPhysicalId: String,
+        buttonReferenceId: String,
+        screenContext: String
+    ) {
+        val message = "Button pressed: physicalId=$buttonPhysicalId, referenceId=$buttonReferenceId"
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
         updateScreenContextOutput(screenContext)
     }
