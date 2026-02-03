@@ -5,17 +5,16 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
 }
 
 android {
     namespace = "de.proglove.example.sdk"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "de.proglove.example.sdk"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = System.getenv("VERSION_CODE")?.toInt() ?: 1
         versionName = "1.0"
         buildConfigField("int", "VERSION_CODE", versionCode.toString())
