@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "de.proglove.example.sdk"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = System.getenv("VERSION_CODE")?.toInt() ?: 1
         versionName = "1.0"
