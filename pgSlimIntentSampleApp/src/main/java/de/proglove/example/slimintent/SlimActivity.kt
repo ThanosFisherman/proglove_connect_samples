@@ -4,12 +4,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.RECEIVER_EXPORTED
 import de.proglove.example.slimintent.databinding.ActivityMainBinding
-
 
 /**
  * This is a minimal code with minimal dependencies that listens to a subset of PG Connect Intent API (barcode scans,
@@ -18,6 +18,7 @@ import de.proglove.example.slimintent.databinding.ActivityMainBinding
 class SlimActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
     // a variable to keep track of the broadcast receiver's registration state
     private var registeredBroadcastReceiver = false
 
@@ -46,7 +47,11 @@ class SlimActivity : AppCompatActivity() {
         setContentView(binding.root)
         // register broadcast receiver, if not done yet
         if (!registeredBroadcastReceiver) {
-            ContextCompat.registerReceiver(this, broadcastReceiver, intentFilter, ContextCompat.RECEIVER_EXPORTED)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED)
+            } else {
+                registerReceiver(broadcastReceiver, intentFilter)
+            }
             registeredBroadcastReceiver = true
         }
 

@@ -10,7 +10,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.proglove.example.common.DisplaySampleData
+import de.proglove.example.sdk.databinding.ActivityGoalsBinding
 import de.proglove.example.sdk.databinding.ActivityMainBinding
+import de.proglove.example.sdk.databinding.FeedbackSelectionLayoutBinding
+import de.proglove.example.sdk.databinding.ProfilesLayoutBinding
+import de.proglove.example.sdk.databinding.TakeImageLayoutBinding
 import de.proglove.sdk.ConnectionStatus
 import de.proglove.sdk.IServiceOutput
 import de.proglove.sdk.PgError
@@ -79,11 +83,21 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
     private lateinit var profilesAdapter: ProfilesAdapter
     private lateinit var binding: ActivityMainBinding
+    private lateinit var feedbackBinding: FeedbackSelectionLayoutBinding
+    private lateinit var takeImageBinding: TakeImageLayoutBinding
+    private lateinit var profilesBinding: ProfilesLayoutBinding
+    private lateinit var activityGoalsBinding: ActivityGoalsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Initialize included layout bindings
+        feedbackBinding = FeedbackSelectionLayoutBinding.bind(binding.feedBackLayout.root)
+        takeImageBinding = TakeImageLayoutBinding.bind(binding.takeImageLayout.root)
+        profilesBinding = ProfilesLayoutBinding.bind(binding.profilesLayout.root)
+        activityGoalsBinding = ActivityGoalsBinding.bind(binding.activityGoals.root)
 
         pgManager.subscribeToServiceEvents(this)
         pgManager.subscribeToScans(this)
@@ -115,12 +129,11 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             }
         }
 
-        binding.feedBackLayout.triggerFeedbackButton.setOnClickListener {
+        feedbackBinding.triggerFeedbackButton.setOnClickListener {
             val selectedFeedbackId = getFeedbackId()
 
             // Creating new PgCommandParams setting the queueing behaviour
-            val pgCommandParams =
-                PgCommandParams(binding.sendFeedbackWithReplaceQueueSwitch.isChecked)
+            val pgCommandParams = PgCommandParams(binding.sendFeedbackWithReplaceQueueSwitch.isChecked)
 
             // Wrapping the feedback data in a PgCommand with the PgCommandData
             val triggerFeedbackCommand = selectedFeedbackId.toCommand(pgCommandParams)
@@ -148,17 +161,16 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             )
         }
         // setting first Item as selected by default
-        binding.feedBackLayout.radioGroup.check(R.id.feedbackId1RB)
+        feedbackBinding.radioGroup.check(feedbackBinding.feedbackId1RB.id)
 
         // set image configurations
         setDefaultImageConfigurations()
-        binding.takeImageLayout.takeImageButton.setOnClickListener {
+        takeImageBinding.takeImageButton.setOnClickListener {
             takeImage()
         }
 
         binding.defaultFeedbackSwitch.setOnClickListener {
-            val config =
-                PgScannerConfig(isDefaultScanAckEnabled = binding.defaultFeedbackSwitch.isChecked)
+            val config = PgScannerConfig(isDefaultScanAckEnabled = binding.defaultFeedbackSwitch.isChecked)
 
             binding.defaultFeedbackSwitch.isEnabled = false
 
@@ -186,7 +198,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             })
         }
 
-        binding.profilesLayout.refreshConfigProfilesButton.setOnClickListener {
+        profilesBinding.refreshConfigProfilesButton.setOnClickListener {
             getConfigProfiles()
         }
 
@@ -219,7 +231,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             obtainDeviceVisibilityInfo()
         }
 
-        binding.activityGoals.setActivityGoalsBtn.setOnClickListener {
+        activityGoalsBinding.setActivityGoalsBtn.setOnClickListener {
             setActivityGoals()
         }
     }
@@ -234,20 +246,15 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
             override fun onError(error: PgError) {
                 runOnUiThread {
-                    Toast.makeText(
-                        this@SdkActivity,
-                        "Got error setting text: $error",
-                        Toast.LENGTH_SHORT
-                    )
-                        .show()
+                    Toast.makeText(this@SdkActivity, "Got error setting text: $error", Toast.LENGTH_SHORT)
+                            .show()
                     binding.lastResponseValue.text = error.toString()
                 }
             }
 
             override fun onSuccess() {
                 runOnUiThread {
-                    Toast.makeText(this@SdkActivity, "set screen successfully", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(this@SdkActivity, "set screen successfully", Toast.LENGTH_SHORT).show()
                     binding.lastResponseValue.text = getString(R.string.set_screen_success)
                 }
             }
@@ -268,8 +275,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                 )
             )
             pgManager.setScreen(
-                command = pgScreen.toCommand(),
-                callback = loggingCallback
+                    command = pgScreen.toCommand(),
+                    callback = loggingCallback
             )
         }
 
@@ -286,8 +293,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                 refreshType = RefreshType.PARTIAL_REFRESH
             )
             pgManager.setScreen(
-                command = pgScreen.toCommand(),
-                callback = loggingCallback
+                    command = pgScreen.toCommand(),
+                    callback = loggingCallback
             )
         }
 
@@ -303,8 +310,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                 durationMs = 3000
             )
             pgManager.setScreen(
-                command = pgScreen.toCommand(),
-                callback = loggingCallback
+                    command = pgScreen.toCommand(),
+                    callback = loggingCallback
             )
         }
 
@@ -333,8 +340,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                 )
             )
             pgManager.setScreen(
-                pgScreen.toCommand(),
-                loggingCallback
+                    pgScreen.toCommand(),
+                    loggingCallback
             )
         }
 
@@ -348,8 +355,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                 )
             )
             pgManager.setScreen(
-                pgScreen.toCommand(),
-                loggingCallback
+                    pgScreen.toCommand(),
+                    loggingCallback
             )
         }
 
@@ -366,8 +373,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                 )
             )
             pgManager.setScreen(
-                pgScreen.toCommand(),
-                loggingCallback
+                    pgScreen.toCommand(),
+                    loggingCallback
             )
         }
     }
@@ -680,9 +687,9 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
     private fun setDefaultImageConfigurations() {
         val imageConfig = PgImageConfig()
-        binding.takeImageLayout.jpegQualityEditText.setText(imageConfig.jpegQuality.toString())
+        takeImageBinding.jpegQualityEditText.setText(imageConfig.jpegQuality.toString())
         val defaultTimeout = DEFAULT_IMAGE_TIMEOUT
-        binding.takeImageLayout.timeoutEditText.setText(defaultTimeout.toString())
+        takeImageBinding.timeoutEditText.setText(defaultTimeout.toString())
     }
 
     private fun setupProfilesRecycler() {
@@ -691,8 +698,8 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                     changeConfigProfile(profileId)
                 }
         )
-        binding.profilesLayout.profilesRecycler.adapter = profilesAdapter
-        binding.profilesLayout.profilesRecycler.layoutManager = LinearLayoutManager(this)
+        profilesBinding.profilesRecycler.adapter = profilesAdapter
+        profilesBinding.profilesRecycler.layoutManager = LinearLayoutManager(this)
     }
 
     private fun takeImage() {
@@ -700,13 +707,13 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
         var quality = 20
 
         try {
-            timeout = binding.takeImageLayout.timeoutEditText.text.toString().toInt()
-            quality = binding.takeImageLayout.jpegQualityEditText.text.toString().toInt()
+            timeout = takeImageBinding.timeoutEditText.text.toString().toInt()
+            quality = takeImageBinding.jpegQualityEditText.text.toString().toInt()
         } catch (e: NumberFormatException) {
             logger.log(Level.WARNING, "use positive numbers only")
         }
 
-        val resolution = when (binding.takeImageLayout.resolutionRadioGroup.checkedRadioButtonId) {
+        val resolution = when (takeImageBinding.resolutionRadioGroup.checkedRadioButtonId) {
             R.id.highResolution -> ImageResolution.RESOLUTION_1280_960
             R.id.mediumResolution -> ImageResolution.RESOLUTION_640_480
             R.id.lowResolution -> ImageResolution.RESOLUTION_320_240
@@ -718,15 +725,14 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
             override fun onImageReceived(image: PgImage) {
                 val bmp = BitmapFactory.decodeByteArray(image.bytes, 0, image.bytes.size)
                 runOnUiThread {
-                    binding.takeImageLayout.imageTaken.setImageBitmap(bmp)
+                    takeImageBinding.imageTaken.setImageBitmap(bmp)
                     binding.lastResponseValue.text = getString(R.string.image_success)
                 }
             }
 
             override fun onError(error: PgError) {
                 runOnUiThread {
-                    Toast.makeText(this@SdkActivity, "error code is $error", Toast.LENGTH_LONG)
-                        .show()
+                    Toast.makeText(this@SdkActivity, "error code is $error", Toast.LENGTH_LONG).show()
                     binding.lastResponseValue.text = error.toString()
                 }
             }
@@ -736,10 +742,10 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
 
     private fun getFeedbackId(): PgPredefinedFeedback {
-        return when (binding.feedBackLayout.radioGroup.checkedRadioButtonId) {
-            R.id.feedbackId1RB -> PgPredefinedFeedback.SUCCESS
-            R.id.feedbackId2RB -> PgPredefinedFeedback.ERROR
-            R.id.feedbackId3RB -> PgPredefinedFeedback.SPECIAL_1
+        return when (feedbackBinding.radioGroup.checkedRadioButtonId) {
+            feedbackBinding.feedbackId1RB.id -> PgPredefinedFeedback.SUCCESS
+            feedbackBinding.feedbackId2RB.id -> PgPredefinedFeedback.ERROR
+            feedbackBinding.feedbackId3RB.id -> PgPredefinedFeedback.SPECIAL_1
             else -> PgPredefinedFeedback.ERROR
         }
     }
@@ -852,7 +858,7 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
                         }
 
                         runOnUiThread {
-                            binding.profilesLayout.changeProfileLabel.visibility = if (profiles.isEmpty()) GONE else VISIBLE
+                            profilesBinding.changeProfileLabel.visibility = if (profiles.isEmpty()) GONE else VISIBLE
                             profilesAdapter.updateProfiles(uiProfiles)
                             binding.lastResponseValue.text = getString(R.string.get_profiles_success)
                         }
@@ -1005,9 +1011,9 @@ class SdkActivity : AppCompatActivity(), IScannerOutput, IServiceOutput, IDispla
 
     private fun setActivityGoals() {
         val activityGoals = PgActivityGoals(
-            binding.activityGoals.activityGoalsStepsGoalEdit.text.toString().toIntOrNull() ?: 650,
-            binding.activityGoals.activityGoalsScansGoalEdit.text.toString().toIntOrNull() ?: 10000,
-            binding.activityGoals.activityGoalsAverageScansGoalEdit.text.toString().toDoubleOrNull() ?: 1.5
+                activityGoalsBinding.activityGoalsStepsGoalEdit.text.toString().toIntOrNull() ?: 650,
+                activityGoalsBinding.activityGoalsScansGoalEdit.text.toString().toIntOrNull() ?: 10000,
+                activityGoalsBinding.activityGoalsAverageScansGoalEdit.text.toString().toDoubleOrNull() ?: 1.5
         )
         pgManager.setActivityGoals(activityGoals.toCommand(), callback = object : IPgSetActivityGoalsCallback {
             override fun onSuccess() {

@@ -14,21 +14,11 @@ import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import de.proglove.sdk.ConnectionStatus;
 import de.proglove.sdk.IPgManager;
 import de.proglove.sdk.IServiceOutput;
@@ -93,8 +83,16 @@ import de.proglove.sdk.scanner.PgImage;
 import de.proglove.sdk.scanner.PgImageConfig;
 import de.proglove.sdk.scanner.PgPredefinedFeedback;
 import de.proglove.sdk.scanner.PgScannerConfig;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class SdkActivity extends AppCompatActivity implements IServiceOutput, IScannerOutput, IButtonOutput, IPgTriggersUnblockedOutput, IDisplayOutput, IPgScannerConfigurationChangeOutput {
+public class SdkActivity extends AppCompatActivity implements IServiceOutput, IScannerOutput, IButtonOutput,
+        IPgTriggersUnblockedOutput, IDisplayOutput, IPgScannerConfigurationChangeOutput {
 
     private static final String TAG = SdkActivity.class.getSimpleName();
     private static int DEFAULT_IMAGE_TIMEOUT = 10000;
@@ -305,7 +303,11 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(SdkActivity.this.getApplicationContext(), "Triggers unblocked", Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                        SdkActivity.this.getApplicationContext(),
+                        "Triggers unblocked",
+                        Toast.LENGTH_SHORT
+                ).show();
             }
         });
     }
@@ -331,7 +333,11 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                 } else if (scannerConfigurationChange.getScannerConfigurationChangeStatus() instanceof ScannerConfigurationChangeStatus.Error) {
                     message = "Fail to change scanner configuration, error: " + ((ScannerConfigurationChangeStatus.Error) scannerConfigurationChange.getScannerConfigurationChangeStatus()).getCause().toString();
                 }
-                Toast.makeText(SdkActivity.this.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                        SdkActivity.this.getApplicationContext(),
+                        message,
+                        Toast.LENGTH_SHORT
+                ).show();
             }
         });
         // Refresh the profiles list
@@ -383,7 +389,7 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         versionOutput = findViewById(R.id.versionOutput);
     }
 
-    private void initData() {
+    private void initData(){
         versionOutput.setText(String.valueOf(BuildConfig.VERSION_CODE));
     }
 
@@ -510,8 +516,12 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         sendTestScreenBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG3(new PgTemplateField(1, "Bezeichnung", "Kopfairbag"), new PgTemplateField(2, "Fahrzeug-Typ", "Hatchback"), new PgTemplateField(3, "Teilenummer", "K867 86 027 H3"));
-
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG3(
+                    new PgTemplateField(1, "Bezeichnung", "Kopfairbag"),
+                    new PgTemplateField(2, "Fahrzeug-Typ", "Hatchback"),
+                    new PgTemplateField(3, "Teilenummer", "K867 86 027 H3")
+                );
+                
                 PgScreen pgScreen = new PgScreen(screenView, RefreshType.DEFAULT);
                 sendScreen(pgScreen);
             }
@@ -520,8 +530,11 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         sendAnotherTestScreenBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG2(new PgTemplateField(1, "Bezeichnung", "Gemüsemischung"), new PgTemplateField(2, "Bezeichnung", "Früchte Müsli"));
-
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG2(
+                        new PgTemplateField(1, "Bezeichnung", "Gemüsemischung"),
+                        new PgTemplateField(2, "Bezeichnung", "Früchte Müsli")
+                );
+                
                 PgScreen pgScreen = new PgScreen(screenView, RefreshType.PARTIAL_REFRESH);
                 sendScreen(pgScreen);
             }
@@ -530,8 +543,10 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         sendPG1TestScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG1(new PgTemplateField(1, "LOGIN", "Scan to login and select a process"));
-
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG1(
+                        new PgTemplateField(1, "LOGIN", "Scan to login and select a process")
+                );
+                
                 PgScreen pgScreen = new PgScreen(screenView, RefreshType.DEFAULT);
                 sendScreen(pgScreen);
             }
@@ -540,7 +555,9 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         sendPG1ATestScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG1A(new PgTemplateField(1, "", "Scan order to begin"));
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG1A(
+                        new PgTemplateField(1, "", "Scan order to begin")
+                );
 
                 PgScreen pgScreen = new PgScreen(screenView, RefreshType.DEFAULT);
                 sendScreen(pgScreen);
@@ -550,7 +567,11 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         sendPG3WithRightHeadersTestScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG3(new PgTemplateField(1, "Quelle", "K1111", "1/10"), new PgTemplateField(2, "Ziel", "V69SS561"), new PgTemplateField(3, "Sachnummer", "A 910 689 61 00", "9051"));
+                PgScreenView.TemplateV1 screenView = new PgScreenView.TemplateV1.PG3(
+                        new PgTemplateField(1, "Quelle", "K1111", "1/10"),
+                        new PgTemplateField(2, "Ziel", "V69SS561"),
+                        new PgTemplateField(3, "Sachnummer", "A 910 689 61 00", "9051")
+                );
 
                 PgScreen pgScreen = new PgScreen(screenView, RefreshType.DEFAULT);
                 sendScreen(pgScreen);
@@ -560,7 +581,12 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
         sendTestScreenFailBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PgTemplateField[] data = {new PgTemplateField(1, "now this is the story", "all about how"), new PgTemplateField(2, "my life got flipped", "turned upside down"), new PgTemplateField(3, "and I'd like to take", "a minute just sit right there"), new PgTemplateField(4, "I'll tell you how I become", "the prince of a town called Bel Air")};
+                PgTemplateField[] data = {
+                        new PgTemplateField(1, "now this is the story", "all about how"),
+                        new PgTemplateField(2, "my life got flipped", "turned upside down"),
+                        new PgTemplateField(3, "and I'd like to take", "a minute just sit right there"),
+                        new PgTemplateField(4, "I'll tell you how I become", "the prince of a town called Bel Air")
+                };
 
                 PgScreen pgScreen = new PgScreen("PG1", Arrays.asList(data), RefreshType.DEFAULT);
                 sendScreen(pgScreen);
@@ -587,77 +613,310 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
 
     private void addDisplayV2ClickListeners() {
         sendPgNtfT5Btn.setOnClickListener(view -> {
-            pgManager.setScreen(new PgScreen("screenId", new PgScreenView.TemplateV2.NotificationView.PgNtfT5("", "Notification", "This is a message with two buttons", new PgScreenComponent.Button("BUTTON_PRIMARY", "OK", Notify.INSTANCE), new PgScreenComponent.Button("BUTTON_SECONDARY", "Cancel", Notify.INSTANCE)), new PgActionButtons(new Assigned("actionButton1", "Notify", Yellow.INSTANCE, Notify.INSTANCE), new Assigned("actionButton3", "Ok", Cyan.INSTANCE, new PgScreenAction.ClickOnPgScreenComponent("BUTTON_PRIMARY")), new Assigned("actionButton4", "Cancel", Green.INSTANCE, new PgScreenAction.ClickOnPgScreenComponent("BUTTON_SECONDARY")), new Assigned("actionButton2", "Back", Red.INSTANCE, NavigateBack.INSTANCE)), Disabled.INSTANCE, PgScreenOrientation.LANDSCAPE).toCommand(), new IPgSetScreenCallback() {
-                @Override
-                public void onSuccess() {
-                    runOnUiThread(() -> {
-                        Toast.makeText(SdkActivity.this, "Notification screen set successfully", Toast.LENGTH_SHORT).show();
-                    });
-                }
+            pgManager.setScreen(
+                new PgScreen(
+                    "screenId",
+                    new PgScreenView.TemplateV2.NotificationView.PgNtfT5(
+                        "",
+                        "Notification",
+                        "This is a message with two buttons",
+                        new PgScreenComponent.Button(
+                            "BUTTON_PRIMARY",
+                            "OK",
+                            Notify.INSTANCE
+                        ),
+                        new PgScreenComponent.Button(
+                            "BUTTON_SECONDARY",
+                            "Cancel",
+                            Notify.INSTANCE
+                        )
+                    ),
+                    new PgActionButtons(
+                        new Assigned(
+                            "actionButton1",
+                            "Notify",
+                            Yellow.INSTANCE,
+                            Notify.INSTANCE
+                        ),
+                        new Assigned(
+                            "actionButton3",
+                            "Ok",
+                            Cyan.INSTANCE,
+                            new PgScreenAction.ClickOnPgScreenComponent("BUTTON_PRIMARY")
+                        ),
+                        new Assigned(
+                            "actionButton4",
+                            "Cancel",
+                            Green.INSTANCE,
+                            new PgScreenAction.ClickOnPgScreenComponent("BUTTON_SECONDARY")
+                        ),
+                        new Assigned(
+                            "actionButton2",
+                            "Back",
+                            Red.INSTANCE,
+                            NavigateBack.INSTANCE
+                        )
+                    ),
+                    Disabled.INSTANCE,
+                    PgScreenOrientation.LANDSCAPE
+                ).toCommand(),
+                new IPgSetScreenCallback() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                SdkActivity.this,
+                                "Notification screen set successfully",
+                                Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
 
-                @Override
-                public void onError(PgError error) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(SdkActivity.this, "Error setting notification screen: " + error, Toast.LENGTH_SHORT).show();
-                    });
+                    @Override
+                    public void onError(PgError error) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                SdkActivity.this,
+                                "Error setting notification screen: " + error,
+                                Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
                 }
-            });
+            );
         });
 
         sendPgWork3Btn2T1.setOnClickListener(view -> {
-            pgManager.setScreen(new PgScreen("screenId", new WorkflowView[]{new PgWork3Btn2T1("", new TextField("fieldTop", "Top Field", "Workflow View with 2 buttons and 1 text field", NoState.INSTANCE), new TextField("", "Middle Left Field", "This is the left field in the middle section", NoState.INSTANCE), new TextField("fieldMiddleRight", "Middle Right Field", "This is the right field in the middle section", NoState.INSTANCE, new NumPad()), new PgScreenComponent.Button("button1", "Ok", Notify.INSTANCE), new PgScreenComponent.Button("button2", "Cancel", Notify.INSTANCE), ""), new PgWork1T1("", new TextField("", "Main Field", "This is the main text field", NoState.INSTANCE), "Screen Title")}, "", new PgActionButtons(Unassigned.INSTANCE, Unassigned.INSTANCE, new Assigned("actionButton1", "Notify", Green.INSTANCE, Notify.INSTANCE), Unassigned.INSTANCE), Disabled.INSTANCE, PgScreenOrientation.PORTRAIT).toCommand(), new IPgSetScreenCallback() {
-                @Override
-                public void onSuccess() {
-                    runOnUiThread(() -> {
-                        Toast.makeText(SdkActivity.this, "Work3T1 screen set successfully", Toast.LENGTH_SHORT).show();
-                    });
-                }
+            pgManager.setScreen(
+                new PgScreen(
+                    "screenId",
+                    new WorkflowView[] {
+                        new PgWork3Btn2T1(
+                            "",
+                            new TextField(
+                                "fieldTop",
+                                "Top Field",
+                                "Workflow View with 2 buttons and 1 text field",
+                                NoState.INSTANCE
+                            ),
+                            new TextField(
+                                "",
+                                "Middle Left Field",
+                                "This is the left field in the middle section",
+                                NoState.INSTANCE
+                            ),
+                            new TextField(
+                                "fieldMiddleRight",
+                                "Middle Right Field",
+                                "This is the right field in the middle section",
+                                NoState.INSTANCE,
+                                new NumPad()
+                            ),
+                            new PgScreenComponent.Button(
+                                "button1",
+                                "Ok",
+                                Notify.INSTANCE
+                            ),
+                            new PgScreenComponent.Button(
+                                "button2",
+                                "Cancel",
+                                Notify.INSTANCE
+                            ),
+                            ""
+                        ),
+                        new PgWork1T1(
+                            "",
+                            new TextField(
+                                "",
+                                "Main Field",
+                                "This is the main text field",
+                                NoState.INSTANCE
+                            ),
+                            "Screen Title"
+                        )
+                    },
+                    "",
+                    new PgActionButtons(
+                        Unassigned.INSTANCE,
+                        Unassigned.INSTANCE,
+                        new Assigned(
+                            "actionButton1",
+                            "Notify",
+                            Green.INSTANCE,
+                            Notify.INSTANCE
+                        ),
+                        Unassigned.INSTANCE
+                    ),
+                    Disabled.INSTANCE,
+                    PgScreenOrientation.PORTRAIT
+                ).toCommand(),
+                new IPgSetScreenCallback() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                SdkActivity.this,
+                                "Work3T1 screen set successfully",
+                                Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
 
-                @Override
-                public void onError(PgError error) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(SdkActivity.this, "Error setting Work3T1 screen: " + error, Toast.LENGTH_SHORT).show();
-                    });
+                    @Override
+                    public void onError(PgError error) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                SdkActivity.this,
+                                "Error setting Work3T1 screen: " + error,
+                                Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
                 }
-            });
+            );
         });
 
         sendPgListT1Btn.setOnClickListener(view -> {
-            List<PgListT1Item> listItems = Arrays.asList(new PgListViewItem.PgListT1Item("", Notify.INSTANCE, "Item 1", "Description 1", None.INSTANCE, "1"), new PgListViewItem.PgListT1Item("", Notify.INSTANCE, "Item 2", "Description 2", Arrow.INSTANCE, "2"), new PgListViewItem.PgListT1Item("", Notify.INSTANCE, "Item 3", "Description 3", None.INSTANCE, "3"), new PgListViewItem.PgListT1Item("", Notify.INSTANCE, "Item 4", "Description 4", Arrow.INSTANCE, "4"), new PgListViewItem.PgListT1Item("", Notify.INSTANCE, "Item 5", "Description 5", None.INSTANCE, "5"));
+            List<PgListT1Item> listItems = Arrays.asList(
+                new PgListViewItem.PgListT1Item(
+                    "",
+                    Notify.INSTANCE,
+                    "Item 1",
+                    "Description 1",
+                    None.INSTANCE,
+                    "1"
+                ),
+                new PgListViewItem.PgListT1Item(
+                    "",
+                    Notify.INSTANCE,
+                    "Item 2",
+                    "Description 2",
+                    Arrow.INSTANCE,
+                    "2"
+                ),
+                new PgListViewItem.PgListT1Item(
+                    "",
+                    Notify.INSTANCE,
+                    "Item 3",
+                    "Description 3",
+                    None.INSTANCE,
+                    "3"
+                ),
+                new PgListViewItem.PgListT1Item(
+                    "",
+                    Notify.INSTANCE,
+                    "Item 4",
+                    "Description 4",
+                    Arrow.INSTANCE,
+                    "4"
+                ),
+                new PgListViewItem.PgListT1Item(
+                    "",
+                    Notify.INSTANCE,
+                    "Item 5",
+                    "Description 5",
+                    None.INSTANCE,
+                    "5"
+                )
+            );
 
-            pgManager.setScreen(new PgScreen("screenId", new PgScreenView.TemplateV2.ListView.PgListT1("", "List View Example", listItems), new PgActionButtons(Unassigned.INSTANCE, Unassigned.INSTANCE, new Assigned("actionButton1", "Notify", Yellow.INSTANCE, Notify.INSTANCE), Unassigned.INSTANCE), Disabled.INSTANCE, PgScreenOrientation.PORTRAIT).toCommand(), new IPgSetScreenCallback() {
-                @Override
-                public void onSuccess() {
-                    runOnUiThread(() -> {
-                        Toast.makeText(SdkActivity.this, "List T1 screen set successfully", Toast.LENGTH_SHORT).show();
-                    });
-                }
+            pgManager.setScreen(
+                new PgScreen(
+                    "screenId",
+                    new PgScreenView.TemplateV2.ListView.PgListT1(
+                        "",
+                        "List View Example",
+                        listItems
+                    ),
+                    new PgActionButtons(
+                        Unassigned.INSTANCE,
+                        Unassigned.INSTANCE,
+                        new Assigned(
+                            "actionButton1",
+                            "Notify",
+                            Yellow.INSTANCE,
+                            Notify.INSTANCE
+                        ),
+                        Unassigned.INSTANCE
+                    ),
+                    Disabled.INSTANCE,
+                    PgScreenOrientation.PORTRAIT
+                ).toCommand(),
+                new IPgSetScreenCallback() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                SdkActivity.this,
+                                "List T1 screen set successfully",
+                                Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
 
-                @Override
-                public void onError(PgError error) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(SdkActivity.this, "Error setting List T1 screen: " + error, Toast.LENGTH_SHORT).show();
-                    });
+                    @Override
+                    public void onError(PgError error) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                SdkActivity.this,
+                                "Error setting List T1 screen: " + error,
+                                Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
                 }
-            });
+            );
         });
 
         sendTimerScreenBtn.setOnClickListener(view -> {
-            pgManager.setScreen(new PgScreen("timerScreen", new PgScreenView.TemplateV2.WorkflowView.PgWork1T1("", new PgScreenComponent.TextField("", "Timer Example", "This screen will automatically navigate back after 2 seconds.", new PgScreenComponent.TextField.State.Focused(true)), ""), new PgActionButtons(Unassigned.INSTANCE, Unassigned.INSTANCE, Unassigned.INSTANCE, Unassigned.INSTANCE), new PgScreenTimer.Enabled(2000, NavigateBack.INSTANCE), PgScreenOrientation.PORTRAIT).toCommand(), new IPgSetScreenCallback() {
-                @Override
-                public void onSuccess() {
-                    runOnUiThread(() -> {
-                        Toast.makeText(SdkActivity.this, "Timer screen set successfully", Toast.LENGTH_SHORT).show();
-                    });
-                }
+            pgManager.setScreen(
+                new PgScreen(
+                    "timerScreen",
+                    new PgScreenView.TemplateV2.WorkflowView.PgWork1T1(
+                        "",
+                        new PgScreenComponent.TextField(
+                            "",
+                            "Timer Example",
+                            "This screen will automatically navigate back after 2 seconds.",
+                            new PgScreenComponent.TextField.State.Focused(true)
+                        ),
+                        ""
+                    ),
+										new PgActionButtons(
+												Unassigned.INSTANCE,
+												Unassigned.INSTANCE,
+												Unassigned.INSTANCE,
+												Unassigned.INSTANCE),
+                    new PgScreenTimer.Enabled(
+                        2000,
+                        NavigateBack.INSTANCE
+                    ),
+                    PgScreenOrientation.PORTRAIT
+                ).toCommand(),
+                new IPgSetScreenCallback() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                SdkActivity.this,
+                                "Timer screen set successfully",
+                                Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
 
-                @Override
-                public void onError(PgError error) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(SdkActivity.this, "Error setting Timer screen: " + error, Toast.LENGTH_SHORT).show();
-                    });
+                    @Override
+                    public void onError(PgError error) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                SdkActivity.this,
+                                "Error setting Timer screen: " + error,
+                                Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
                 }
-            });
+            );
         });
     }
 
@@ -727,7 +986,8 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
 
     private void startTakingImage() {
         String imageQualityString = imageQualityET.getText().toString();
-        int quality = imageQualityString.isEmpty() ? defaultImageQuality : Integer.parseInt(imageQualityString);
+        int quality =
+                imageQualityString.isEmpty() ? defaultImageQuality : Integer.parseInt(imageQualityString);
 
         String timeoutString = timeoutET.getText().toString();
         int timeout = timeoutString.isEmpty() ? DEFAULT_IMAGE_TIMEOUT : Integer.parseInt(timeoutString);
@@ -774,12 +1034,11 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
     }
 
     private PgPredefinedFeedback getSelectedFeedback() {
-        int checkedId = feedbackRadioGroup.getCheckedRadioButtonId();
-        if (checkedId == R.id.feedbackSuccess) {
+        if (feedbackRadioGroup.getCheckedRadioButtonId() == R.id.feedbackSuccess) {
             return PgPredefinedFeedback.SUCCESS;
-        } else if (checkedId == R.id.feedbackError) {
+        } else if (feedbackRadioGroup.getCheckedRadioButtonId() == R.id.feedbackError) {
             return PgPredefinedFeedback.ERROR;
-        } else if (checkedId == R.id.feedbackInfo) {
+        } else if (feedbackRadioGroup.getCheckedRadioButtonId() == R.id.feedbackInfo) {
             return PgPredefinedFeedback.SPECIAL_1;
         } else {
             Log.d(TAG, "getSelectedFeedback: Nothing is selected, returning ERROR as default value.");
@@ -863,7 +1122,9 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
 
         resultSymbologyTV.setText(symbology);
 
-        String msg = !symbology.isEmpty() ? getString(R.string.new_scan_notification, barcodeScanResults.getBarcodeContent(), symbology) : getString(R.string.new_scan_no_symbology_notification, barcodeScanResults.getBarcodeContent());
+        String msg = !symbology.isEmpty() ?
+                getString(R.string.new_scan_notification, barcodeScanResults.getBarcodeContent(), symbology) :
+                getString(R.string.new_scan_no_symbology_notification, barcodeScanResults.getBarcodeContent());
         showMessage(msg, false);
     }
 
@@ -909,136 +1170,187 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
     }
 
     private void changeConfigProfile(final String profileId) {
-        pgManager.changeConfigProfile(new PgCommand<>(new PgConfigProfile(profileId)), new IPgConfigProfileCallback() {
-            @Override
-            public void onConfigProfileChanged(@NonNull PgConfigProfile pgConfigProfile) {
-                runOnUiThread(new Runnable() {
+        pgManager.changeConfigProfile(
+                new PgCommand<>(new PgConfigProfile(profileId)),
+                new IPgConfigProfileCallback() {
                     @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(), profileId + " set successfully", Toast.LENGTH_LONG).show();
+                    public void onConfigProfileChanged(@NonNull PgConfigProfile pgConfigProfile) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                        getApplicationContext(),
+                                        profileId + " set successfully",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
-                });
-            }
 
-            @Override
-            public void onError(@NonNull final PgError pgError) {
-                runOnUiThread(new Runnable() {
                     @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(), "Failed to set " + profileId + ": " + pgError.toString(), Toast.LENGTH_LONG).show();
+                    public void onError(@NonNull final PgError pgError) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                        getApplicationContext(),
+                                        "Failed to set " + profileId + ": " + pgError.toString(),
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
-                });
-            }
-        });
+                }
+        );
     }
 
     private void getConfigProfiles() {
-        pgManager.getConfigProfiles(new IPgGetConfigProfilesCallback() {
-            @Override
-            public void onConfigProfilesReceived(@NonNull PgConfigProfile[] profiles) {
-                Log.d(TAG, "received " + profiles.length + " config profiles");
-
-                final ArrayList<ProfileUiData> uiProfiles = new ArrayList<>();
-                for (PgConfigProfile profile : profiles) {
-                    uiProfiles.add(new ProfileUiData(profile.getProfileId(), profile.isActive()));
-                }
-
-                runOnUiThread(new Runnable() {
+        pgManager.getConfigProfiles(
+                new IPgGetConfigProfilesCallback() {
                     @Override
-                    public void run() {
-                        if (uiProfiles.isEmpty()) {
-                            changeProfileLabel.setVisibility(View.INVISIBLE);
-                        } else {
-                            changeProfileLabel.setVisibility(View.VISIBLE);
+                    public void onConfigProfilesReceived(@NonNull PgConfigProfile[] profiles) {
+                        Log.d(TAG, "received " + profiles.length + " config profiles");
+
+                        final ArrayList<ProfileUiData> uiProfiles = new ArrayList<>();
+                        for (PgConfigProfile profile : profiles) {
+                            uiProfiles.add(new ProfileUiData(profile.getProfileId(), profile.isActive()));
                         }
-                        profilesAdapter.updateProfiles(uiProfiles);
-                    }
-                });
-            }
 
-            @Override
-            public void onError(@NonNull final PgError pgError) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(), "Failed to get configuration profiles: " + pgError.toString(), Toast.LENGTH_LONG).show();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (uiProfiles.isEmpty()) {
+                                    changeProfileLabel.setVisibility(View.INVISIBLE);
+                                } else {
+                                    changeProfileLabel.setVisibility(View.VISIBLE);
+                                }
+                                profilesAdapter.updateProfiles(uiProfiles);
+                            }
+                        });
                     }
-                });
-            }
-        });
+
+                    @Override
+                    public void onError(@NonNull final PgError pgError) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                        getApplicationContext(),
+                                        "Failed to get configuration profiles: " + pgError.toString(),
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
+                    }
+                }
+        );
     }
 
     private void blockTrigger() {
-        pgManager.blockPgTrigger(new PgCommand<>(new BlockPgTriggersParams(Collections.singletonList(PredefinedPgTrigger.DefaultPgTrigger.INSTANCE), Collections.singletonList(PredefinedPgTrigger.DoubleClickMainPgTrigger.INSTANCE), 0, true)), new IBlockPgTriggersCallback() {
-            @Override
-            public void onBlockTriggersCommandSuccess() {
-                runOnUiThread(new Runnable() {
+        pgManager.blockPgTrigger(
+                new PgCommand<>(new BlockPgTriggersParams(
+                    Collections.singletonList(PredefinedPgTrigger.DefaultPgTrigger.INSTANCE),
+                    Collections.singletonList(PredefinedPgTrigger.DoubleClickMainPgTrigger.INSTANCE),
+                    0,
+                    true)),
+                new IBlockPgTriggersCallback() {
                     @Override
-                    public void run() {
-                        Toast.makeText(SdkActivity.this.getApplicationContext(), "Blocking trigger success", Toast.LENGTH_LONG).show();
+                    public void onBlockTriggersCommandSuccess() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                        SdkActivity.this.getApplicationContext(),
+                                        "Blocking trigger success",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
-                });
-            }
 
-            @Override
-            public void onError(@NonNull final PgError error) {
-                runOnUiThread(new Runnable() {
                     @Override
-                    public void run() {
-                        Toast.makeText(SdkActivity.this.getApplicationContext(), "Failed to block the trigger: " + error, Toast.LENGTH_LONG).show();
+                    public void onError(@NonNull final PgError error) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                        SdkActivity.this.getApplicationContext(),
+                                        "Failed to block the trigger: " + error,
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
                 });
-            }
-        });
     }
 
     // Requires Insight Mobile v1.13.0+ and Scanner v2.5.0+
     private void blockAllTriggersFor10s() {
-        pgManager.blockPgTrigger(new PgCommand<>(new BlockPgTriggersParams(Collections.<PredefinedPgTrigger>emptyList(), Collections.<PredefinedPgTrigger>emptyList(), 10000, true)), new IBlockPgTriggersCallback() {
-            @Override
-            public void onBlockTriggersCommandSuccess() {
-                runOnUiThread(new Runnable() {
+        pgManager.blockPgTrigger(
+                new PgCommand<>(new BlockPgTriggersParams(Collections.<PredefinedPgTrigger>emptyList(), Collections.<PredefinedPgTrigger>emptyList(), 10000, true)),
+                new IBlockPgTriggersCallback() {
                     @Override
-                    public void run() {
-                        Toast.makeText(SdkActivity.this.getApplicationContext(), "Blocking all triggers success", Toast.LENGTH_LONG).show();
+                    public void onBlockTriggersCommandSuccess() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                    SdkActivity.this.getApplicationContext(),
+                                    "Blocking all triggers success",
+                                    Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
-                });
-            }
 
-            @Override
-            public void onError(@NonNull final PgError error) {
-                runOnUiThread(new Runnable() {
                     @Override
-                    public void run() {
-                        Toast.makeText(SdkActivity.this.getApplicationContext(), "Failed to block all triggers: " + error, Toast.LENGTH_LONG).show();
+                    public void onError(@NonNull final PgError error) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                    SdkActivity.this.getApplicationContext(),
+                                    "Failed to block all triggers: " + error,
+                                    Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
                 });
-            }
-        });
     }
 
     private void unblockTrigger() {
-        pgManager.blockPgTrigger(new PgCommand<>(new BlockPgTriggersParams(Collections.<PredefinedPgTrigger>emptyList(), Collections.<PredefinedPgTrigger>emptyList(), 0, false)), new IBlockPgTriggersCallback() {
-            @Override
-            public void onBlockTriggersCommandSuccess() {
-                runOnUiThread(new Runnable() {
+        pgManager.blockPgTrigger(
+                new PgCommand<>(new BlockPgTriggersParams(Collections.<PredefinedPgTrigger>emptyList(), Collections.<PredefinedPgTrigger>emptyList(), 0, false)),
+                new IBlockPgTriggersCallback() {
                     @Override
-                    public void run() {
-                        Toast.makeText(SdkActivity.this.getApplicationContext(), "Unblocking triggers success", Toast.LENGTH_LONG).show();
+                    public void onBlockTriggersCommandSuccess() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                        SdkActivity.this.getApplicationContext(),
+                                        "Unblocking triggers success",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
-                });
-            }
 
-            @Override
-            public void onError(@NonNull final PgError error) {
-                runOnUiThread(new Runnable() {
                     @Override
-                    public void run() {
-                        Toast.makeText(SdkActivity.this.getApplicationContext(), "Failed to unblock the trigger: " + error, Toast.LENGTH_LONG).show();
+                    public void onError(@NonNull final PgError error) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                        SdkActivity.this.getApplicationContext(),
+                                        "Failed to unblock the trigger: " + error,
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
                 });
-            }
-        });
     }
 
     /**
@@ -1059,7 +1371,9 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                         AlertDialog.Builder builder = new AlertDialog.Builder(SdkActivity.this);
 
                         builder.setTitle(R.string.device_visibility_alert_title);
-                        builder.setMessage(getString(R.string.device_visibility_alert_content_error, error));
+                        builder.setMessage(getString(
+                                R.string.device_visibility_alert_content_error, error
+                        ));
                         builder.create().show();
                     }
                 });
@@ -1075,7 +1389,14 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
                         AlertDialog.Builder builder = new AlertDialog.Builder(SdkActivity.this);
 
                         builder.setTitle(R.string.device_visibility_alert_title);
-                        builder.setMessage(getString(R.string.device_visibility_alert_content, deviceVisibilityInfo.getSerialNumber(), deviceVisibilityInfo.getFirmwareRevision(), deviceVisibilityInfo.getBatteryLevel(), deviceVisibilityInfo.getBceRevision(), deviceVisibilityInfo.getModelNumber(), deviceVisibilityInfo.getManufacturer(), deviceVisibilityInfo.getAppVersion()));
+                        builder.setMessage(getString(R.string.device_visibility_alert_content,
+                                deviceVisibilityInfo.getSerialNumber(),
+                                deviceVisibilityInfo.getFirmwareRevision(),
+                                deviceVisibilityInfo.getBatteryLevel(),
+                                deviceVisibilityInfo.getBceRevision(),
+                                deviceVisibilityInfo.getModelNumber(),
+                                deviceVisibilityInfo.getManufacturer(),
+                                deviceVisibilityInfo.getAppVersion()));
                         builder.create().show();
                     }
                 });

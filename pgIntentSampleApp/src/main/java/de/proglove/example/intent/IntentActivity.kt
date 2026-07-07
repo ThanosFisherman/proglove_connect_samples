@@ -1,6 +1,7 @@
 package de.proglove.example.intent
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View.GONE
@@ -8,7 +9,6 @@ import android.view.View.VISIBLE
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.proglove.example.common.ApiConstants
 import de.proglove.example.common.DisplaySampleData
@@ -31,15 +31,11 @@ import java.util.Date
 class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScannerOutput, IStatusOutput, IScannerConfigurationChangeOutput {
 
     private lateinit var binding: ActivityIntentBinding
+
     override var defaultFeedbackEnabled: Boolean
-        get() {
-            return if (::binding.isInitialized)
-                binding.defaultFeedbackSwitch.isChecked
-            else false
-        }
+        get() = binding.defaultFeedbackSwitch.isChecked
         set(value) {
-            if (::binding.isInitialized)
-                binding.defaultFeedbackSwitch.isChecked = value
+            binding.defaultFeedbackSwitch.isChecked = value
         }
 
     private lateinit var profilesAdapter: ProfilesAdapter
@@ -54,12 +50,11 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         binding = ActivityIntentBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ContextCompat.registerReceiver(
-            this,
-            messageHandler,
-            messageHandler.filter,
-            ContextCompat.RECEIVER_EXPORTED
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(messageHandler, messageHandler.filter, RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(messageHandler, messageHandler.filter)
+        }
         messageHandler.registerDisplayOutput(this)
         messageHandler.registerScannerOutput(this)
         messageHandler.setStatusListener(this)
@@ -69,7 +64,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         // That Intent will not trigger #onNewIntent.
         messageHandler.handleNewIntent(intent)
 
-        binding.versionOutput.text = BuildConfig.VERSION_CODE.toString()
+        binding.versionOutput.text = packageManager.getPackageInfo(packageName, 0).versionCode.toString()
 
         binding.getScannerStateBtn.setOnClickListener {
             messageHandler.requestScannerState()
@@ -89,7 +84,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
             messageHandler.triggerFeedback(selectedFeedbackId, shouldReplaceQueue)
         }
         //setting first Item as selected by default
-        binding.feedBackLayout.radioGroup.check(R.id.feedbackId1RB)
+        binding.feedBackLayout.radioGroup.check(binding.feedBackLayout.feedbackId1RB.id)
 
         binding.defaultFeedbackSwitch.setOnClickListener {
             val defaultScanFeedback = binding.defaultFeedbackSwitch.isChecked
@@ -125,6 +120,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         binding.getDisplayDeviceTypeBtn.setOnClickListener {
             messageHandler.requestDisplayDeviceType()
         }
+
         binding.sendTestScreenBtn.setOnClickListener {
             val templateId = "PG2"
             val separator = "|"
@@ -247,9 +243,9 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
     }
 
     private fun getFeedbackId() = when (binding.feedBackLayout.radioGroup.checkedRadioButtonId) {
-        R.id.feedbackId1RB -> 1
-        R.id.feedbackId2RB -> 2
-        R.id.feedbackId3RB -> 3
+        binding.feedBackLayout.feedbackId1RB.id -> 1
+        binding.feedBackLayout.feedbackId2RB.id -> 2
+        binding.feedBackLayout.feedbackId3RB.id -> 3
         // returning 1 as default
         else -> 1
     }
@@ -257,11 +253,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
     override fun onDestroy() {
         super.onDestroy()
 
-        try {
-            unregisterReceiver(messageHandler)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        unregisterReceiver(messageHandler)
         messageHandler.unregisterDisplayOutput(this)
         messageHandler.unregisterScannerOutput(this)
     }
@@ -355,7 +347,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         runOnUiThread {
             binding.intentInputField.text = barcode
             Toast.makeText(this, "Got barcode: $barcode", Toast.LENGTH_LONG).show()
-            binding.lastSymbologyOutput.text = symbology ?: ""
+            binding.lastSymbologyOutput.text = symbology
         }
         updateScreenContextOutput(screenContext)
         updateLastContact()
@@ -383,8 +375,7 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         }
 
         runOnUiThread {
-            binding.profilesLayout.changeProfileLabel.visibility =
-                if (profiles.isEmpty()) GONE else VISIBLE
+            binding.profilesLayout.changeProfileLabel.visibility = if (profiles.isEmpty()) GONE else VISIBLE
             profilesAdapter.updateProfiles(profiles)
         }
     }
@@ -406,13 +397,9 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
     }
 
     private fun setActivityGoals() {
-        val totalStepsGoal =
-            binding.activityGoals.activityGoalsStepsGoalEdit.text.toString().toIntOrNull() ?: 650
-        val totalScansGoal =
-            binding.activityGoals.activityGoalsScansGoalEdit.text.toString().toIntOrNull() ?: 10000
-        val averageScantimeGoal =
-            binding.activityGoals.activityGoalsAverageScansGoalEdit.text.toString().toFloatOrNull()
-                ?: 1.5f
+        val totalStepsGoal = binding.activityGoals.activityGoalsStepsGoalEdit.text.toString().toIntOrNull() ?: 650
+        val totalScansGoal = binding.activityGoals.activityGoalsScansGoalEdit.text.toString().toIntOrNull() ?: 10000
+        val averageScantimeGoal = binding.activityGoals.activityGoalsAverageScansGoalEdit.text.toString().toFloatOrNull() ?: 1.5f
 
         messageHandler.updateGoals(totalStepsGoal, totalScansGoal, averageScantimeGoal)
     }
@@ -498,3 +485,4 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
  * Profile data for displaying on UI.
  */
 data class ProfileUiData(val profileId: String, var active: Boolean)
+
