@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+import de.proglove.example.sdk.java.R;
+
 /**
  * Adapter that handles visual representation of the list of configuration profiles.
  */

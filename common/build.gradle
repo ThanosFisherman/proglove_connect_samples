@@ -1,13 +1,18 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+plugins {
+    id("com.android.library")
+}
+
+kotlin {
+    jvmToolchain(17)
+}
 
 android {
-    compileSdkVersion 33
+    namespace = "de.proglove.example.common"
+    compileSdkVersion 36
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 33
+        minSdkVersion 26
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -19,13 +24,4 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-}
-
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-}
-
-repositories {
-    mavenCentral()
 }

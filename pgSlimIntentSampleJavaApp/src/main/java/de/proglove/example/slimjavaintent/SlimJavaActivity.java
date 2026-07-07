@@ -1,9 +1,11 @@
 package de.proglove.example.slimjavaintent;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -32,7 +34,7 @@ public class SlimJavaActivity extends AppCompatActivity {
     private TextView scannerState = null;
 
     // broadcast receiver object for intents
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // Handle broadcasted Intents with action
@@ -62,7 +64,11 @@ public class SlimJavaActivity extends AppCompatActivity {
 
         // register broadcast receiver, if not done yet
         if (!registeredBroadcastReceiver) {
-            registerReceiver(broadcastReceiver, intentFilter);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED);
+            } else {
+                registerReceiver(broadcastReceiver, intentFilter);
+            }
             registeredBroadcastReceiver = true;
         }
 

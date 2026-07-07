@@ -3,10 +3,10 @@ name: Build and deploy
 agent:
   machine:
     type: e2-standard-2
-    os_image: ubuntu2004
+    os_image: ubuntu2404
   containers:
     - name: main
-      image: 'registry.semaphoreci.com/android:33'
+      image: 'registry.semaphoreci.com/android:34'
 global_job_config:
   prologue:
     commands:

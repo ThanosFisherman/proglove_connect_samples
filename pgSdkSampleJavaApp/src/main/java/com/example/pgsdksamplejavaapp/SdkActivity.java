@@ -19,6 +19,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import de.proglove.example.sdk.java.BuildConfig;
+import de.proglove.example.sdk.java.R;
 import de.proglove.sdk.ConnectionStatus;
 import de.proglove.sdk.IPgManager;
 import de.proglove.sdk.IServiceOutput;
@@ -1034,29 +1036,28 @@ public class SdkActivity extends AppCompatActivity implements IServiceOutput, IS
     }
 
     private PgPredefinedFeedback getSelectedFeedback() {
-        switch (feedbackRadioGroup.getCheckedRadioButtonId()) {
-            case R.id.feedbackSuccess:
-                return PgPredefinedFeedback.SUCCESS;
-            case R.id.feedbackError:
-                return PgPredefinedFeedback.ERROR;
-            case R.id.feedbackInfo:
-                return PgPredefinedFeedback.SPECIAL_1;
-            default:
-                Log.d(TAG, "getSelectedFeedback: Nothing is selected, returning ERROR as default value.");
-                return PgPredefinedFeedback.ERROR;
+        if (feedbackRadioGroup.getCheckedRadioButtonId() == R.id.feedbackSuccess) {
+            return PgPredefinedFeedback.SUCCESS;
+        } else if (feedbackRadioGroup.getCheckedRadioButtonId() == R.id.feedbackError) {
+            return PgPredefinedFeedback.ERROR;
+        } else if (feedbackRadioGroup.getCheckedRadioButtonId() == R.id.feedbackInfo) {
+            return PgPredefinedFeedback.SPECIAL_1;
+        } else {
+            Log.d(TAG, "getSelectedFeedback: Nothing is selected, returning ERROR as default value.");
+            return PgPredefinedFeedback.ERROR;
         }
     }
 
     private ImageResolution getSelectedImageResolution() {
-        switch (resolutionRadioGroup.getCheckedRadioButtonId()) {
-            case R.id.highResolution:
-                return ImageResolution.RESOLUTION_1280_960;
-            case R.id.mediumResolution:
-                return ImageResolution.RESOLUTION_640_480;
-            case R.id.lowResolution:
-                return ImageResolution.RESOLUTION_320_240;
-            default:
-                return ImageResolution.values()[1];
+        int checkedId = resolutionRadioGroup.getCheckedRadioButtonId();
+        if (checkedId == R.id.highResolution) {
+            return ImageResolution.RESOLUTION_1280_960;
+        } else if (checkedId == R.id.mediumResolution) {
+            return ImageResolution.RESOLUTION_640_480;
+        } else if (checkedId == R.id.lowResolution) {
+            return ImageResolution.RESOLUTION_320_240;
+        } else {
+            return ImageResolution.values()[1];
         }
     }
 
