@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.io.FileInputStream
 import java.util.Properties
@@ -62,19 +63,21 @@ android {
             buildConfigField("int", "VERSION_CODE", defaultConfig.versionCode.toString())
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-    project.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
-        compilerOptions {
-            languageVersion.set(KotlinVersion.KOTLIN_2_3)
-            jvmTarget.set(JvmTarget.fromTarget("21"))
-        }
-    }
     buildFeatures {
         viewBinding = true
         buildConfig = true
+    }
+}
+
+extensions.configure<KotlinAndroidProjectExtension>("kotlin") {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        languageVersion.set(KotlinVersion.KOTLIN_2_3)
     }
 }
 
