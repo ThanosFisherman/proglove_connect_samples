@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.RECEIVER_EXPORTED
 import de.proglove.example.slimintent.databinding.ActivityMainBinding
 
@@ -47,11 +48,12 @@ class SlimActivity : AppCompatActivity() {
         setContentView(binding.root)
         // register broadcast receiver, if not done yet
         if (!registeredBroadcastReceiver) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED)
-            } else {
-                registerReceiver(broadcastReceiver, intentFilter)
-            }
+            ContextCompat.registerReceiver(
+                this,
+                broadcastReceiver,
+                intentFilter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
             registeredBroadcastReceiver = true
         }
 

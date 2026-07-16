@@ -9,6 +9,7 @@ import android.view.View.VISIBLE
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.proglove.example.common.ApiConstants
 import de.proglove.example.common.DisplaySampleData
@@ -50,11 +51,12 @@ class IntentActivity : AppCompatActivity(), IIntentDisplayOutput, IIntentScanner
         binding = ActivityIntentBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(messageHandler, messageHandler.filter, RECEIVER_EXPORTED)
-        } else {
-            registerReceiver(messageHandler, messageHandler.filter)
-        }
+        ContextCompat.registerReceiver(
+            this,
+            messageHandler,
+            messageHandler.filter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
         messageHandler.registerDisplayOutput(this)
         messageHandler.registerScannerOutput(this)
         messageHandler.setStatusListener(this)
